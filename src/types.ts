@@ -6,6 +6,9 @@ export interface Account {
   status: 'Target' | 'Selected' | 'Active';
   jouleDeployed: boolean;
   walkMeDeployed: boolean;
+  pocs?: string;
+  department?: string;
+  otherAiTools?: string;
 }
 
 export interface UseCase {
@@ -19,6 +22,8 @@ export interface UseCase {
   resources: string;
   authorId: string;
   authorName: string;
+  demoPresented?: boolean;
+  recordingLink?: string;
   createdAt: any;
 }
 

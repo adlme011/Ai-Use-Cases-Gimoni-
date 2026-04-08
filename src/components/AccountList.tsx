@@ -5,11 +5,13 @@ import { collection, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestor
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
-import { Plus, Pencil, Trash2, Globe, User, CheckCircle2, XCircle } from 'lucide-react';
+import { Plus, Pencil, Trash2, Globe, User, CheckCircle2, XCircle, Building2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface AccountListProps {
@@ -27,7 +29,24 @@ export function AccountList({ accounts, isAdmin }: AccountListProps) {
     status: 'Target',
     jouleDeployed: false,
     walkMeDeployed: false,
+    pocs: '',
+    department: '',
+    otherAiTools: '',
   });
+
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      region: 'US',
+      leads: '',
+      status: 'Target',
+      jouleDeployed: false,
+      walkMeDeployed: false,
+      pocs: '',
+      department: '',
+      otherAiTools: '',
+    });
+  };
 
   const handleSave = async () => {
     if (!formData.name) {
@@ -45,7 +64,7 @@ export function AccountList({ accounts, isAdmin }: AccountListProps) {
       }
       setIsAddOpen(false);
       setEditingAccount(null);
-      setFormData({ name: '', region: 'US', leads: '', status: 'Target', jouleDeployed: false, walkMeDeployed: false });
+      resetForm();
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, 'accounts');
     }
@@ -69,19 +88,17 @@ export function AccountList({ accounts, isAdmin }: AccountListProps) {
           <p className="text-slate-500">Manage the 10 target accounts for the SWAT initiative.</p>
         </div>
         <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-          <DialogTrigger asChild>
-            <Button className="gap-2">
-              <Plus className="w-4 h-4" />
-              Add Account
-            </Button>
+          <DialogTrigger render={<Button className="gap-2" />}>
+            <Plus className="w-4 h-4" />
+            Add Account
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>{editingAccount ? 'Edit Account' : 'Add New Account'}</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4 py-4">
+            <div className="space-y-4 py-4 max-h-[70vh] overflow-y-auto px-1">
               <div className="space-y-2">
-                <label className="text-sm font-medium">Account Name</label>
+                <Label>Account Name</Label>
                 <Input 
                   value={formData.name} 
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -90,7 +107,7 @@ export function AccountList({ accounts, isAdmin }: AccountListProps) {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Region</label>
+                  <Label>Region</Label>
                   <Select 
                     value={formData.region} 
                     onValueChange={(v: any) => setFormData({ ...formData, region: v, leads: v === 'US' ? 'Alex and Olga' : 'Steven and Mark' })}
@@ -105,7 +122,7 @@ export function AccountList({ accounts, isAdmin }: AccountListProps) {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Status</label>
+                  <Label>Status</Label>
                   <Select 
                     value={formData.status} 
                     onValueChange={(v: any) => setFormData({ ...formData, status: v })}
@@ -121,12 +138,39 @@ export function AccountList({ accounts, isAdmin }: AccountListProps) {
                   </Select>
                 </div>
               </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Department</Label>
+                  <Input 
+                    value={formData.department} 
+                    onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                    placeholder="e.g., HR, Sales"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Leads</Label>
+                  <Input 
+                    value={formData.leads} 
+                    onChange={(e) => setFormData({ ...formData, leads: e.target.value })}
+                    placeholder="Assigned leads"
+                  />
+                </div>
+              </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Leads</label>
+                <Label>Point of Contacts (POCs)</Label>
                 <Input 
-                  value={formData.leads} 
-                  onChange={(e) => setFormData({ ...formData, leads: e.target.value })}
-                  placeholder="Assigned leads"
+                  value={formData.pocs} 
+                  onChange={(e) => setFormData({ ...formData, pocs: e.target.value })}
+                  placeholder="Name, Role, Email"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Other AI Tools & Usage</Label>
+                <Textarea 
+                  value={formData.otherAiTools} 
+                  onChange={(e) => setFormData({ ...formData, otherAiTools: e.target.value })}
+                  placeholder="What other AI tools are they using and how?"
+                  className="min-h-[80px]"
                 />
               </div>
               <div className="flex gap-8 pt-2">
@@ -164,7 +208,8 @@ export function AccountList({ accounts, isAdmin }: AccountListProps) {
             <TableRow>
               <TableHead>Account Name</TableHead>
               <TableHead>Region</TableHead>
-              <TableHead>Leads</TableHead>
+              <TableHead>Dept / Leads</TableHead>
+              <TableHead>POCs / AI Tools</TableHead>
               <TableHead>Deployment</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
@@ -188,9 +233,25 @@ export function AccountList({ accounts, isAdmin }: AccountListProps) {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
-                      <User className="w-3 h-3 text-slate-400" />
-                      {account.leads}
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 text-xs font-medium text-slate-700">
+                        <Building2 className="w-3 h-3 text-slate-400" />
+                        {account.department || 'N/A'}
+                      </div>
+                      <div className="flex items-center gap-2 text-xs text-slate-500">
+                        <User className="w-3 h-3 text-slate-400" />
+                        {account.leads}
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="space-y-1 max-w-[200px]">
+                      <div className="text-xs font-medium text-slate-700 truncate" title={account.pocs}>
+                        {account.pocs || 'No POCs'}
+                      </div>
+                      <div className="text-[10px] text-slate-500 line-clamp-1 italic" title={account.otherAiTools}>
+                        {account.otherAiTools || 'No AI tools info'}
+                      </div>
                     </div>
                   </TableCell>
                   <TableCell>

@@ -10,7 +10,10 @@
         "leads": { "type": "string", "description": "The leads for this account (e.g., Alex and Olga for US)." },
         "status": { "type": "string", "enum": ["Target", "Selected", "Active"], "description": "The selection status of the account." },
         "jouleDeployed": { "type": "boolean", "description": "Whether SAP Joule is deployed." },
-        "walkMeDeployed": { "type": "boolean", "description": "Whether WalkMe is deployed." }
+        "walkMeDeployed": { "type": "boolean", "description": "Whether WalkMe is deployed." },
+        "pocs": { "type": "string", "description": "Point of contacts at the account." },
+        "department": { "type": "string", "description": "The department involved." },
+        "otherAiTools": { "type": "string", "description": "Other AI tools they are using and how." }
       },
       "required": ["name", "region", "status"]
     },
@@ -27,6 +30,8 @@
         "resources": { "type": "string", "description": "Product and R&D resources assigned." },
         "authorId": { "type": "string", "description": "The UID of the user who created this use case." },
         "authorName": { "type": "string", "description": "The name of the user who created this use case." },
+        "demoPresented": { "type": "boolean", "description": "Whether a demo has been presented." },
+        "recordingLink": { "type": "string", "description": "Link to the demo recording." },
         "createdAt": { "type": "string", "format": "date-time", "description": "When the use case was created." }
       },
       "required": ["accountId", "title", "status", "authorId"]
