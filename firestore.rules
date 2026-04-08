@@ -1,0 +1,127 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: accounts
+    // Document ID: auto-generated
+    // Fields:
+    //   - name: string (required, 1-100 chars)
+    //   - region: string (required, enum: ["US", "Europe"])
+    //   - leads: string (optional, 0-200 chars)
+    //   - status: string (required, enum: ["Target", "Selected", "Active"])
+    //   - jouleDeployed: bool (optional)
+    //   - walkMeDeployed: bool (optional)
+    //
+    // Collection: useCases
+    // Document ID: auto-generated
+    // Fields:
+    //   - accountId: string (required, references accounts)
+    //   - title: string (required, 1-200 chars)
+    //   - description: string (optional, 0-2000 chars)
+    //   - valueProposition: string (optional, 0-2000 chars)
+    //   - status: string (required, enum: ["Idea", "Draft", "Feasibility", "Validated", "Productized"])
+    //   - resources: string (optional, 0-500 chars)
+    //   - authorId: string (required, immutable)
+    //   - authorName: string (required, 1-100 chars)
+    //   - createdAt: timestamp (required, immutable)
+    //
+    // Collection: users
+    // Document ID: user UID
+    // Fields:
+    //   - name: string (required, 1-100 chars)
+    //   - email: string (required, email format)
+    //   - role: string (required, enum: ["Solution Advisor", "Engineering", "Leadership"])
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Leadership' ||
+         (request.auth.token.email == "meir.adler@walkme.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidEmail(email) {
+      return email is string && email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidAccount(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+             data.region in ["US", "Europe"] &&
+             data.status in ["Target", "Selected", "Active"] &&
+             (!('leads' in data) || (data.leads is string && data.leads.size() <= 200)) &&
+             (!('jouleDeployed' in data) || data.jouleDeployed is bool) &&
+             (!('walkMeDeployed' in data) || data.walkMeDeployed is bool);
+    }
+
+    function isValidUseCase(data) {
+      return data.accountId is string &&
+             data.title is string && data.title.size() > 0 && data.title.size() <= 200 &&
+             data.status in ["Idea", "Draft", "Feasibility", "Validated", "Productized"] &&
+             data.authorId == request.auth.uid &&
+             data.authorName is string && data.authorName.size() > 0 && data.authorName.size() <= 100 &&
+             (!('description' in data) || (data.description is string && data.description.size() <= 2000)) &&
+             (!('valueProposition' in data) || (data.valueProposition is string && data.valueProposition.size() <= 2000)) &&
+             (!('resources' in data) || (data.resources is string && data.resources.size() <= 500));
+    }
+
+    function isValidUser(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+             data.email is string && isValidEmail(data.email) &&
+             data.role in ["Solution Advisor", "Engineering", "Leadership"];
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isOwner(userId) && isValidUser(request.resource.data);
+      allow update: if (isOwner(userId) || isAdmin()) && isValidUser(request.resource.data) && 
+                      (isAdmin() || request.resource.data.role == resource.data.role);
+    }
+
+    match /accounts/{accountId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidAccount(request.resource.data);
+      allow update: if isAuthenticated() && isValidAccount(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /useCases/{useCaseId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidUseCase(request.resource.data);
+      allow update: if isAuthenticated() && isValidUseCase(request.resource.data) && 
+                      request.resource.data.authorId == resource.data.authorId &&
+                      request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if isAdmin() || (isAuthenticated() && request.auth.uid == resource.data.authorId);
+    }
+    
+    match /test/connection {
+      allow read: if true;
+    }
+  }
+}

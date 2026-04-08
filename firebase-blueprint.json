@@ -1,0 +1,60 @@
+{
+  "entities": {
+    "Account": {
+      "title": "Target Account",
+      "description": "A customer account targeted for the AI SWAT initiative.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "The name of the customer account." },
+        "region": { "type": "string", "enum": ["US", "Europe"], "description": "The geographic region of the account." },
+        "leads": { "type": "string", "description": "The leads for this account (e.g., Alex and Olga for US)." },
+        "status": { "type": "string", "enum": ["Target", "Selected", "Active"], "description": "The selection status of the account." },
+        "jouleDeployed": { "type": "boolean", "description": "Whether SAP Joule is deployed." },
+        "walkMeDeployed": { "type": "boolean", "description": "Whether WalkMe is deployed." }
+      },
+      "required": ["name", "region", "status"]
+    },
+    "UseCase": {
+      "title": "AI Use Case",
+      "description": "A high-impact AI use case identified for a Joule + WalkMe customer.",
+      "type": "object",
+      "properties": {
+        "accountId": { "type": "string", "description": "The ID of the associated account." },
+        "title": { "type": "string", "description": "The title of the use case." },
+        "description": { "type": "string", "description": "Detailed description of the use case." },
+        "valueProposition": { "type": "string", "description": "The combined value proposition of Joule + WalkMe." },
+        "status": { "type": "string", "enum": ["Idea", "Draft", "Feasibility", "Validated", "Productized"], "description": "The development status of the use case." },
+        "resources": { "type": "string", "description": "Product and R&D resources assigned." },
+        "authorId": { "type": "string", "description": "The UID of the user who created this use case." },
+        "authorName": { "type": "string", "description": "The name of the user who created this use case." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "When the use case was created." }
+      },
+      "required": ["accountId", "title", "status", "authorId"]
+    },
+    "User": {
+      "title": "User Profile",
+      "description": "Profile information for Solution Advisors, Engineering, and Leadership.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "The user's full name." },
+        "email": { "type": "string", "format": "email", "description": "The user's email address." },
+        "role": { "type": "string", "enum": ["Solution Advisor", "Engineering", "Leadership"], "description": "The user's role in the initiative." }
+      },
+      "required": ["name", "email", "role"]
+    }
+  },
+  "firestore": {
+    "/accounts/{accountId}": {
+      "schema": "Account",
+      "description": "Collection of target customer accounts."
+    },
+    "/useCases/{useCaseId}": {
+      "schema": "UseCase",
+      "description": "Collection of identified AI use cases."
+    },
+    "/users/{userId}": {
+      "schema": "User",
+      "description": "Collection of user profiles."
+    }
+  }
+}
