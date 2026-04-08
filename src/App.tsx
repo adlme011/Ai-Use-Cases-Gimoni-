@@ -12,51 +12,19 @@ import { UseCaseList } from '@/components/UseCaseList';
 import { Loader2 } from 'lucide-react';
 
 export default function App() {
-  const [user, setUser] = useState<FirebaseUser | null>(null);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [useCases, setUseCases] = useState<UseCase[]>([]);
   const [activeTab, setActiveTab] = useState('dashboard');
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      setUser(firebaseUser);
-      if (firebaseUser) {
-        try {
-          const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
-          if (userDoc.exists()) {
-            setProfile({ uid: firebaseUser.uid, ...userDoc.data() } as UserProfile);
-          } else {
-            // New user, default to Solution Advisor
-            const newProfile: UserProfile = {
-              uid: firebaseUser.uid,
-              name: firebaseUser.displayName || 'Anonymous',
-              email: firebaseUser.email || '',
-              role: 'Solution Advisor',
-            };
-            await setDoc(doc(db, 'users', firebaseUser.uid), {
-              name: newProfile.name,
-              email: newProfile.email,
-              role: newProfile.role,
-            });
-            setProfile(newProfile);
-          }
-        } catch (error) {
-          handleFirestoreError(error, OperationType.GET, `users/${firebaseUser.uid}`);
-        }
-      } else {
-        setProfile(null);
-      }
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, []);
+  const profile: UserProfile = {
+    uid: 'guest',
+    name: 'Guest User',
+    email: 'guest@example.com',
+    role: 'Leadership', // Give full access by default
+  };
 
   useEffect(() => {
-    if (!user) return;
-
     const qAccounts = query(collection(db, 'accounts'), orderBy('name'));
     const unsubAccounts = onSnapshot(qAccounts, (snapshot) => {
       const accs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Account));
@@ -73,7 +41,7 @@ export default function App() {
       unsubAccounts();
       unsubUseCases();
     };
-  }, [user]);
+  }, []);
 
   const handleLogin = async () => {
     try {
@@ -104,34 +72,11 @@ export default function App() {
     );
   }
 
-  if (!user) {
-    return (
-      <div className="h-screen w-screen flex flex-col items-center justify-center bg-slate-50 p-4">
-        <div className="max-w-md w-full bg-white p-8 rounded-2xl shadow-xl border border-slate-200 text-center">
-          <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
-            <div className="w-8 h-8 bg-primary rounded-lg" />
-          </div>
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">AI SWAT Initiative</h1>
-          <p className="text-slate-600 mb-8">
-            Collaborative platform for Joule & WalkMe AI use case identification and development.
-          </p>
-          <button
-            onClick={handleLogin}
-            className="w-full py-3 px-4 bg-primary text-primary-foreground rounded-xl font-medium hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
-          >
-            Sign in with Google
-          </button>
-        </div>
-        <Toaster position="top-right" />
-      </div>
-    );
-  }
-
   return (
     <Layout 
-      user={user} 
+      user={null} 
       profile={profile} 
-      onLogout={handleLogout} 
+      onLogout={() => {}} 
       activeTab={activeTab} 
       setActiveTab={setActiveTab}
     >

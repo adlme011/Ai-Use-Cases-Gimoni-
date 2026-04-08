@@ -51,22 +51,9 @@ export function Layout({ children, user, profile, onLogout, activeTab, setActive
             </nav>
 
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-3 px-3 py-1.5 bg-slate-100 rounded-full">
-                <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
-                  <User className="w-3 h-3 text-primary" />
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-xs font-semibold text-slate-900 leading-none">{profile?.name}</span>
-                  <span className="text-[10px] text-slate-500 leading-none mt-0.5">{profile?.role}</span>
-                </div>
-              </div>
-              <button
-                onClick={onLogout}
-                className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 transition-all rounded-lg"
-                title="Logout"
-              >
-                <LogOut className="w-5 h-5" />
-              </button>
+              <span className="text-xs font-medium text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
+                Public Access Mode
+              </span>
             </div>
           </div>
         </div>

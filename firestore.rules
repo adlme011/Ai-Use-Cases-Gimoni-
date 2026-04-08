@@ -98,26 +98,15 @@ service cloud.firestore {
     // ===============================================================
 
     match /users/{userId} {
-      allow read: if isAuthenticated();
-      allow create: if isOwner(userId) && isValidUser(request.resource.data);
-      allow update: if (isOwner(userId) || isAdmin()) && isValidUser(request.resource.data) && 
-                      (isAdmin() || request.resource.data.role == resource.data.role);
+      allow read, write: if true;
     }
 
     match /accounts/{accountId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && isValidAccount(request.resource.data);
-      allow update: if isAuthenticated() && isValidAccount(request.resource.data);
-      allow delete: if isAdmin();
+      allow read, write: if true;
     }
 
     match /useCases/{useCaseId} {
-      allow read: if isAuthenticated();
-      allow create: if isAuthenticated() && isValidUseCase(request.resource.data);
-      allow update: if isAuthenticated() && isValidUseCase(request.resource.data) && 
-                      request.resource.data.authorId == resource.data.authorId &&
-                      request.resource.data.createdAt == resource.data.createdAt;
-      allow delete: if isAdmin() || (isAuthenticated() && request.auth.uid == resource.data.authorId);
+      allow read, write: if true;
     }
     
     match /test/connection {

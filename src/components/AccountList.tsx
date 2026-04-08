@@ -284,11 +284,9 @@ export function AccountList({ accounts, isAdmin }: AccountListProps) {
                       >
                         <Pencil className="w-4 h-4" />
                       </Button>
-                      {isAdmin && (
-                        <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-600 hover:bg-red-50" onClick={() => handleDelete(account.id)}>
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      )}
+                      <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-600 hover:bg-red-50" onClick={() => handleDelete(account.id)}>
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>
