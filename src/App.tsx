@@ -77,11 +77,13 @@ export default function App() {
 
   const handleLogin = async () => {
     try {
-      await signInWithPopup(auth, googleProvider);
+      console.log('Attempting login with popup...');
+      const result = await signInWithPopup(auth, googleProvider);
+      console.log('Login successful:', result.user.email);
       toast.success('Successfully logged in');
-    } catch (error) {
-      toast.error('Login failed');
-      console.error(error);
+    } catch (error: any) {
+      console.error('Login error details:', error);
+      toast.error(`Login failed: ${error.message || 'Unknown error'}`);
     }
   };
 
@@ -120,6 +122,7 @@ export default function App() {
             Sign in with Google
           </button>
         </div>
+        <Toaster position="top-right" />
       </div>
     );
   }
