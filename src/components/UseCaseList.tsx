@@ -182,7 +182,9 @@ export function UseCaseList({ useCases, accounts, profile }: UseCaseListProps) {
                     onValueChange={(v) => setFormData({ ...formData, accountId: v })}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder="Select account" />
+                      <SelectValue placeholder="Select account">
+                        {accounts.find(acc => acc.id === formData.accountId)?.name}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       {accounts.map(acc => (
