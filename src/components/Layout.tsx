@@ -21,15 +21,18 @@ export function Layout({ children, user, profile, onLogout, activeTab, setActive
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col">
-      <header className="bg-white border-bottom border-slate-200 sticky top-0 z-50">
+    <div className="min-h-screen bg-[#F5F7FA] flex flex-col">
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <div className="w-4 h-4 bg-white rounded-sm" />
+              <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center shadow-lg shadow-primary/20">
+                <div className="w-5 h-5 bg-white rounded-[4px]" />
               </div>
-              <span className="font-bold text-xl text-slate-900 hidden sm:block">AI SWAT Hub</span>
+              <div className="flex flex-col">
+                <span className="font-bold text-lg text-slate-900 leading-none">AI SWAT Hub</span>
+                <span className="text-[10px] font-semibold text-primary uppercase tracking-widest mt-1">Powered by WalkMe</span>
+              </div>
             </div>
 
             <nav className="hidden md:flex items-center gap-1">
@@ -51,8 +54,8 @@ export function Layout({ children, user, profile, onLogout, activeTab, setActive
             </nav>
 
             <div className="flex items-center gap-4">
-              <span className="text-xs font-medium text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
-                Public Access Mode
+              <span className="text-[10px] font-bold text-primary bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20 uppercase tracking-wider">
+                Public Access
               </span>
             </div>
           </div>

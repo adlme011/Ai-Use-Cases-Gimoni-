@@ -16,28 +16,28 @@ export function Dashboard({ accounts, useCases }: DashboardProps) {
       label: 'Target Accounts', 
       value: accounts.length, 
       icon: Building2, 
-      color: 'bg-blue-500',
+      color: 'bg-primary',
       description: 'Total accounts in scope'
     },
     { 
       label: 'Selected Accounts', 
       value: accounts.filter(a => a.status === 'Selected').length, 
       icon: Target, 
-      color: 'bg-indigo-500',
+      color: 'bg-primary/80',
       description: 'Accounts aligned with Sales/CSM'
     },
     { 
       label: 'AI Use Cases', 
       value: useCases.length, 
       icon: Lightbulb, 
-      color: 'bg-amber-500',
+      color: 'bg-primary/60',
       description: 'Total identified opportunities'
     },
     { 
       label: 'Productized', 
       value: useCases.filter(u => u.status === 'Productized').length, 
       icon: CheckCircle2, 
-      color: 'bg-emerald-500',
+      color: 'bg-primary/40',
       description: 'Ready for scale'
     }
   ];
@@ -51,8 +51,8 @@ export function Dashboard({ accounts, useCases }: DashboardProps) {
     <div className="space-y-8">
       <div className="flex flex-col gap-2">
         <h2 className="text-3xl font-bold tracking-tight text-slate-900">Initiative Overview</h2>
-        <p className="text-slate-500 max-w-2xl">
-          Identifying and developing high-impact AI use cases for customers with both SAP Joule and WalkMe deployed.
+        <p className="text-slate-500 max-w-3xl leading-relaxed">
+          Identify compelling AI use cases within our joint Joule + WalkMe customer base that demonstrate the combined value of both platforms — deepening strategic relationships, validating the AI roadmap, and building a library of proven use cases for broader GTM efforts.
         </p>
       </div>
 
@@ -92,7 +92,7 @@ export function Dashboard({ accounts, useCases }: DashboardProps) {
             <div className="flex items-end gap-8 h-48 pt-8">
               <div className="flex-1 flex flex-col items-center gap-2">
                 <div 
-                  className="w-full bg-blue-500 rounded-t-xl transition-all duration-500" 
+                  className="w-full bg-primary rounded-t-xl transition-all duration-500" 
                   style={{ height: `${(regionStats.US / 10) * 100}%` }}
                 />
                 <span className="text-sm font-medium text-slate-600">US (Alex & Olga)</span>
@@ -100,7 +100,7 @@ export function Dashboard({ accounts, useCases }: DashboardProps) {
               </div>
               <div className="flex-1 flex flex-col items-center gap-2">
                 <div 
-                  className="w-full bg-indigo-500 rounded-t-xl transition-all duration-500" 
+                  className="w-full bg-primary/60 rounded-t-xl transition-all duration-500" 
                   style={{ height: `${(regionStats.Europe / 10) * 100}%` }}
                 />
                 <span className="text-sm font-medium text-slate-600">Europe (Steven & Mark)</span>
@@ -126,9 +126,11 @@ export function Dashboard({ accounts, useCases }: DashboardProps) {
               <h4 className="text-sm font-semibold text-slate-900 mb-1">Sales & CSM</h4>
               <p className="text-xs text-slate-600">Alignment on account selection and success criteria.</p>
             </div>
-            <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-              <h4 className="text-sm font-semibold text-slate-900 mb-1">Objective</h4>
-              <p className="text-xs text-slate-600 italic">"Identify compelling AI use cases that demonstrate combined value."</p>
+            <div className="p-4 bg-primary/5 rounded-xl border border-primary/10">
+              <h4 className="text-sm font-semibold text-primary mb-1">Core Objective</h4>
+              <p className="text-xs text-slate-700 leading-relaxed">
+                Identify compelling AI use cases within our joint Joule + WalkMe customer base that demonstrate the combined value of both platforms — deepening strategic relationships, validating the AI roadmap, and building a library of proven use cases for broader GTM efforts.
+              </p>
             </div>
           </CardContent>
         </Card>

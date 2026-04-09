@@ -143,12 +143,12 @@ export function UseCaseList({ useCases, accounts, profile }: UseCaseListProps) {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Idea': return 'bg-slate-100 text-slate-600';
-      case 'Draft': return 'bg-blue-100 text-blue-600';
-      case 'Feasibility': return 'bg-amber-100 text-amber-600';
-      case 'Validated': return 'bg-indigo-100 text-indigo-600';
-      case 'Productized': return 'bg-emerald-100 text-emerald-600';
-      default: return 'bg-slate-100 text-slate-600';
+      case 'Idea': return 'bg-slate-100 text-slate-600 border-slate-200';
+      case 'Draft': return 'bg-blue-50 text-primary border-primary/20';
+      case 'Feasibility': return 'bg-amber-50 text-amber-700 border-amber-200';
+      case 'Validated': return 'bg-indigo-50 text-indigo-700 border-indigo-200';
+      case 'Productized': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      default: return 'bg-slate-100 text-slate-600 border-slate-200';
     }
   };
 

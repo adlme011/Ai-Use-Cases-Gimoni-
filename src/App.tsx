@@ -66,7 +66,7 @@ export default function App() {
 
   if (loading) {
     return (
-      <div className="h-screen w-screen flex items-center justify-center bg-slate-50">
+      <div className="h-screen w-screen flex items-center justify-center bg-[#F5F7FA]">
         <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );

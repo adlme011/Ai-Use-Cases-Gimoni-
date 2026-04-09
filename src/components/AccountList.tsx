@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Plus, Pencil, Trash2, Globe, User, CheckCircle2, XCircle, Building2 } from 'lucide-react';
@@ -204,15 +205,15 @@ export function AccountList({ accounts, isAdmin }: AccountListProps) {
 
       <Card className="border-slate-200 shadow-sm overflow-hidden">
         <Table>
-          <TableHeader className="bg-slate-50">
+          <TableHeader className="bg-slate-50/50 border-b border-slate-200">
             <TableRow>
-              <TableHead>Account Name</TableHead>
-              <TableHead>Region</TableHead>
-              <TableHead>Dept / Leads</TableHead>
-              <TableHead>POCs / AI Tools</TableHead>
-              <TableHead>Deployment</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="font-bold text-slate-900">Account Name</TableHead>
+              <TableHead className="font-bold text-slate-900">Region</TableHead>
+              <TableHead className="font-bold text-slate-900">Dept / Leads</TableHead>
+              <TableHead className="font-bold text-slate-900">POCs / AI Tools</TableHead>
+              <TableHead className="font-bold text-slate-900">Deployment</TableHead>
+              <TableHead className="font-bold text-slate-900">Status</TableHead>
+              <TableHead className="text-right font-bold text-slate-900">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -256,10 +257,10 @@ export function AccountList({ accounts, isAdmin }: AccountListProps) {
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-2">
-                      <Badge variant={account.jouleDeployed ? "default" : "secondary"} className="text-[10px]">
+                      <Badge variant={account.jouleDeployed ? "default" : "secondary"} className={cn("text-[10px]", account.jouleDeployed && "bg-primary hover:bg-primary/90")}>
                         Joule {account.jouleDeployed ? <CheckCircle2 className="w-2 h-2 ml-1" /> : <XCircle className="w-2 h-2 ml-1" />}
                       </Badge>
-                      <Badge variant={account.walkMeDeployed ? "default" : "secondary"} className="text-[10px]">
+                      <Badge variant={account.walkMeDeployed ? "default" : "secondary"} className={cn("text-[10px]", account.walkMeDeployed && "bg-primary hover:bg-primary/90")}>
                         WalkMe {account.walkMeDeployed ? <CheckCircle2 className="w-2 h-2 ml-1" /> : <XCircle className="w-2 h-2 ml-1" />}
                       </Badge>
                     </div>
