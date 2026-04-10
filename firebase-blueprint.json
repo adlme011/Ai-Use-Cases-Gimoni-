@@ -28,6 +28,8 @@
         "valueProposition": { "type": "string", "description": "The combined value proposition of Joule + WalkMe." },
         "status": { "type": "string", "enum": ["Idea", "Draft", "Feasibility", "Validated", "Productized"], "description": "The development status of the use case." },
         "resources": { "type": "string", "description": "Product and R&D resources assigned." },
+        "scheduledActivity": { "type": "string", "description": "Next scheduled activities or milestones." },
+        "responsibilities": { "type": "string", "description": "Assigned responsibilities for the use case." },
         "authorId": { "type": "string", "description": "The UID of the user who created this use case." },
         "authorName": { "type": "string", "description": "The name of the user who created this use case." },
         "demoPresented": { "type": "boolean", "description": "Whether a demo has been presented." },

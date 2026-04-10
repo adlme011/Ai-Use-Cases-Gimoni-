@@ -20,6 +20,8 @@ export interface UseCase {
   valueProposition: string;
   status: 'Idea' | 'Draft' | 'Feasibility' | 'Validated' | 'Productized';
   resources: string;
+  scheduledActivity?: string;
+  responsibilities?: string;
   authorId: string;
   authorName: string;
   demoPresented?: boolean;

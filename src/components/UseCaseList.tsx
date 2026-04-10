@@ -30,6 +30,8 @@ export function UseCaseList({ useCases, accounts, profile }: UseCaseListProps) {
     valueProposition: '',
     status: 'Idea',
     resources: '',
+    scheduledActivity: '',
+    responsibilities: '',
     demoPresented: false,
     recordingLink: '',
   });
@@ -112,6 +114,8 @@ export function UseCaseList({ useCases, accounts, profile }: UseCaseListProps) {
         valueProposition: '', 
         status: 'Idea', 
         resources: '',
+        scheduledActivity: '',
+        responsibilities: '',
         demoPresented: false,
         recordingLink: '',
       });
@@ -246,6 +250,22 @@ export function UseCaseList({ useCases, accounts, profile }: UseCaseListProps) {
                   placeholder="Assigned resources or feasibility notes"
                 />
               </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Responsibilities</label>
+                <Input 
+                  value={formData.responsibilities} 
+                  onChange={(e) => setFormData({ ...formData, responsibilities: e.target.value })}
+                  placeholder="Who is responsible for what?"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Scheduled Activity</label>
+                <Input 
+                  value={formData.scheduledActivity} 
+                  onChange={(e) => setFormData({ ...formData, scheduledActivity: e.target.value })}
+                  placeholder="Next milestone or meeting date"
+                />
+              </div>
               <div className="grid grid-cols-2 gap-4 pt-2">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input 
@@ -355,6 +375,17 @@ export function UseCaseList({ useCases, accounts, profile }: UseCaseListProps) {
                         </div>
                       )}
 
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="p-2.5 bg-slate-50 rounded-lg border border-slate-100">
+                          <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Responsibilities</h4>
+                          <p className="text-xs text-slate-600 line-clamp-2">{uc.responsibilities || 'Not assigned'}</p>
+                        </div>
+                        <div className="p-2.5 bg-slate-50 rounded-lg border border-slate-100">
+                          <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Next Activity</h4>
+                          <p className="text-xs text-slate-600 line-clamp-2">{uc.scheduledActivity || 'None scheduled'}</p>
+                        </div>
+                      </div>
+
                       <div className="flex flex-wrap gap-2">
                         {uc.demoPresented && (
                           <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 gap-1">
@@ -373,6 +404,35 @@ export function UseCaseList({ useCases, accounts, profile }: UseCaseListProps) {
                             Recording
                           </a>
                         )}
+                      </div>
+
+                      <div className="flex items-center gap-2 pt-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="flex-1 gap-2 text-xs h-8"
+                          onClick={() => {
+                            const subject = encodeURIComponent(`AI Use Case: ${uc.title}`);
+                            const body = encodeURIComponent(`Hi,\n\nI'd like to discuss the AI Use Case "${uc.title}" for ${uc.accountName}.\n\nDescription: ${uc.description}\n\nResponsibilities: ${uc.responsibilities || 'N/A'}\nNext Activity: ${uc.scheduledActivity || 'N/A'}`);
+                            window.location.href = `mailto:?subject=${subject}&body=${body}`;
+                          }}
+                        >
+                          <MessageSquare className="w-3.5 h-3.5" />
+                          Email
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="flex-1 gap-2 text-xs h-8"
+                          onClick={() => {
+                            const text = encodeURIComponent(`*AI Use Case Update: ${uc.title}*\nAccount: ${uc.accountName}\nResponsibilities: ${uc.responsibilities || 'N/A'}\nNext Activity: ${uc.scheduledActivity || 'N/A'}`);
+                            window.open(`https://slack.com/app_redirect?channel=general&text=${text}`, '_blank');
+                            toast.info('Opening Slack... You can paste the copied info into any channel.');
+                          }}
+                        >
+                          <Users className="w-3.5 h-3.5" />
+                          Slack
+                        </Button>
                       </div>
 
                       <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
