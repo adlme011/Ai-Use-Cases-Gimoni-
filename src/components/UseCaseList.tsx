@@ -252,18 +252,20 @@ export function UseCaseList({ useCases, accounts, profile }: UseCaseListProps) {
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Responsibilities</label>
-                <Input 
+                <Textarea 
                   value={formData.responsibilities} 
                   onChange={(e) => setFormData({ ...formData, responsibilities: e.target.value })}
                   placeholder="Who is responsible for what?"
+                  className="min-h-[60px]"
                 />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Scheduled Activity</label>
-                <Input 
+                <Textarea 
                   value={formData.scheduledActivity} 
                   onChange={(e) => setFormData({ ...formData, scheduledActivity: e.target.value })}
-                  placeholder="Next milestone or meeting date"
+                  placeholder="Dates and descriptions for upcoming tasks or milestones"
+                  className="min-h-[80px]"
                 />
               </div>
               <div className="grid grid-cols-2 gap-4 pt-2">
@@ -375,14 +377,14 @@ export function UseCaseList({ useCases, accounts, profile }: UseCaseListProps) {
                         </div>
                       )}
 
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 gap-3">
                         <div className="p-2.5 bg-slate-50 rounded-lg border border-slate-100">
                           <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Responsibilities</h4>
-                          <p className="text-xs text-slate-600 line-clamp-2">{uc.responsibilities || 'Not assigned'}</p>
+                          <p className="text-xs text-slate-600 whitespace-pre-wrap">{uc.responsibilities || 'Not assigned'}</p>
                         </div>
                         <div className="p-2.5 bg-slate-50 rounded-lg border border-slate-100">
-                          <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Next Activity</h4>
-                          <p className="text-xs text-slate-600 line-clamp-2">{uc.scheduledActivity || 'None scheduled'}</p>
+                          <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Scheduled Activity</h4>
+                          <p className="text-xs text-slate-600 whitespace-pre-wrap">{uc.scheduledActivity || 'None scheduled'}</p>
                         </div>
                       </div>
 
