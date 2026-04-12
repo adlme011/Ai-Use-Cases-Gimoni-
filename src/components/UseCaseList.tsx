@@ -9,10 +9,11 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
-import { Plus, Pencil, Trash2, MessageSquare, Rocket, Hammer, CheckCircle2, User as UserIcon, Calendar, Lightbulb, TrendingUp, Building2, Download, Video, Link as LinkIcon, Users } from 'lucide-react';
+import { Plus, Pencil, Trash2, MessageSquare, Rocket, Hammer, CheckCircle2, User as UserIcon, Calendar, Lightbulb, TrendingUp, Building2, Download, Video, Link as LinkIcon, Users, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { motion } from 'motion/react';
 
 interface UseCaseListProps {
   useCases: UseCase[];
@@ -460,216 +461,243 @@ export function UseCaseList({ useCases, accounts, profile }: UseCaseListProps) {
       </div>
     </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
         {useCases.length === 0 ? (
-          <div className="col-span-full text-center py-20 bg-white rounded-2xl border border-dashed border-slate-300 text-slate-500">
-            <Lightbulb className="w-12 h-12 mx-auto mb-4 opacity-20" />
-            <p>No use cases identified yet. Start by adding one!</p>
+          <div className="col-span-full text-center py-32 bg-white/50 backdrop-blur-sm rounded-3xl border-2 border-dashed border-slate-200 text-slate-400">
+            <div className="bg-slate-100 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <Lightbulb className="w-8 h-8 opacity-20" />
+            </div>
+            <p className="text-lg font-medium">No use cases identified yet.</p>
+            <p className="text-sm">Start by adding one to the hub!</p>
           </div>
         ) : (
-          useCases.map((uc) => (
-            <Card key={uc.id} className="border-slate-200 shadow-sm hover:shadow-md transition-all group">
-              {(() => {
-                const account = accounts.find(a => a.id === uc.accountId);
-                return (
-                  <>
-                    <CardHeader className="pb-3">
-                      <div className="flex justify-between items-start mb-2">
-                        <Badge className={cn("gap-1.5 px-2 py-0.5", getStatusColor(uc.status))}>
-                          {getStatusIcon(uc.status)}
-                          {uc.status}
-                        </Badge>
-                        <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <>
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
-                              className="h-8 w-8"
-                              onClick={() => {
-                                setEditingUseCase(uc);
-                                setFormData(uc);
-                                setIsAddOpen(true);
-                              }}
-                            >
-                              <Pencil className="w-3 h-3" />
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
-                              className="h-8 w-8 text-red-500 hover:text-red-600 hover:bg-red-50"
-                              onClick={() => handleDelete(uc.id)}
-                            >
-                              <Trash2 className="w-3 h-3" />
-                            </Button>
-                          </>
-                        </div>
-                      </div>
-                      <CardTitle className="text-lg font-bold text-slate-900">{uc.title}</CardTitle>
-                      <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1">
-                        <CardDescription className="flex items-center gap-1">
-                          <Building2 className="w-3 h-3" />
-                          {uc.accountName || 'Unknown Account'}
-                        </CardDescription>
-                        {account?.department && (
-                          <CardDescription className="flex items-center gap-1">
-                            <Users className="w-3 h-3" />
-                            {account.department}
-                          </CardDescription>
-                        )}
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-                        {account?.pocs && (
-                          <div className="col-span-2 text-[10px] text-slate-500 bg-slate-50 p-1.5 rounded border border-slate-100">
-                            <span className="font-semibold">POCs:</span> {account.pocs}
-                          </div>
-                        )}
-                        
-                        <div className="space-y-1 col-span-2">
-                          <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Description</h4>
-                          <p className="text-sm text-slate-600 line-clamp-3">{uc.description || 'No description provided.'}</p>
-                        </div>
-
-                        {uc.businessProblem && (
-                          <div className="space-y-1 col-span-2">
-                            <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Business Problem / Pain</h4>
-                            <p className="text-sm text-slate-600 line-clamp-2">{uc.businessProblem}</p>
-                          </div>
-                        )}
-
-                        <div className="space-y-1">
-                          <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">AI Capability</h4>
-                          <p className="text-xs text-slate-700 font-medium">{uc.aiCapability || 'N/A'}</p>
-                        </div>
-
-                        <div className="space-y-1">
-                          <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">WalkMe Feature</h4>
-                          <p className="text-xs text-slate-700 font-medium">{uc.walkmeFeature || 'N/A'}</p>
-                        </div>
-
-                        <div className="space-y-1">
-                          <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Solution Advisor</h4>
-                          <p className="text-xs text-slate-700 font-medium">{uc.solutionAdvisor || 'N/A'}</p>
-                        </div>
-
-                        <div className="space-y-1">
-                          <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">User Persona</h4>
-                          <p className="text-xs text-slate-700 font-medium">{uc.userPersona || 'N/A'}</p>
-                        </div>
-
-                        {uc.jouleUsage && (
-                          <div className="space-y-1 col-span-2 p-2 bg-blue-50/30 rounded border border-blue-100/50">
-                            <h4 className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">SAP Joule Usage</h4>
-                            <p className="text-xs text-slate-700">{uc.jouleUsage}</p>
-                          </div>
-                        )}
-
-                        {uc.walkmeUsage && (
-                          <div className="space-y-1 col-span-2 p-2 bg-indigo-50/30 rounded border border-indigo-100/50">
-                            <h4 className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">WalkMe AI Usage</h4>
-                            <p className="text-xs text-slate-700">{uc.walkmeUsage}</p>
-                          </div>
-                        )}
-                      </div>
-                      
-                      {uc.impactMetrics && (
-                        <div className="p-2.5 bg-emerald-50/50 rounded-lg border border-emerald-100">
-                          <h4 className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mb-1 flex items-center gap-1">
-                            <TrendingUp className="w-3 h-3" />
-                            Impact Metrics
-                          </h4>
-                          <p className="text-xs text-slate-700">{uc.impactMetrics}</p>
-                        </div>
-                      )}
-
-                      {uc.valueProposition && (
-                        <div className="p-3 bg-primary/5 rounded-lg border border-primary/10">
-                          <h4 className="text-[10px] font-bold text-primary uppercase tracking-widest mb-1 flex items-center gap-1">
-                            <Rocket className="w-3 h-3" />
-                            Combined Value
-                          </h4>
-                          <p className="text-sm text-slate-700 italic">"{uc.valueProposition}"</p>
-                        </div>
-                      )}
-
-                      <div className="grid grid-cols-1 gap-3">
-                        <div className="p-2.5 bg-slate-50 rounded-lg border border-slate-100">
-                          <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Responsibilities</h4>
-                          <p className="text-xs text-slate-600 whitespace-pre-wrap">{uc.responsibilities || 'Not assigned'}</p>
-                        </div>
-                        <div className="p-2.5 bg-slate-50 rounded-lg border border-slate-100">
-                          <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Scheduled Activity</h4>
-                          <p className="text-xs text-slate-600 whitespace-pre-wrap">{uc.scheduledActivity || 'None scheduled'}</p>
-                        </div>
-                      </div>
-
-                      <div className="flex flex-wrap gap-2">
-                        {uc.demoPresented && (
-                          <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 gap-1">
-                            <Video className="w-3 h-3" />
-                            Demo Presented
-                          </Badge>
-                        )}
-                        {uc.recordingLink && (
-                          <a 
-                            href={uc.recordingLink} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-xs text-primary hover:underline bg-primary/5 px-2 py-0.5 rounded-full border border-primary/10"
+          useCases.map((uc, i) => (
+            <motion.div
+              key={uc.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.05 }}
+            >
+              <Card className="border-none shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:shadow-primary/5 transition-all group bg-white/80 backdrop-blur-sm overflow-hidden h-full flex flex-col">
+                {(() => {
+                  const account = accounts.find(a => a.id === uc.accountId);
+                  return (
+                    <>
+                      <CardHeader className="pb-4 relative">
+                        <div className="absolute top-0 right-0 p-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary"
+                            onClick={() => {
+                              setEditingUseCase(uc);
+                              setFormData(uc);
+                              setIsAddOpen(true);
+                            }}
                           >
-                            <LinkIcon className="w-3 h-3" />
-                            Recording
-                          </a>
-                        )}
-                      </div>
+                            <Pencil className="w-3.5 h-3.5" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50"
+                            onClick={() => handleDelete(uc.id)}
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        </div>
 
-                      <div className="flex items-center gap-2 pt-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="flex-1 gap-2 text-xs h-8"
-                          onClick={() => {
-                            const subject = encodeURIComponent(`AI Use Case: ${uc.title}`);
-                            const body = encodeURIComponent(`Hi,\n\nI'd like to discuss the AI Use Case "${uc.title}" for ${uc.accountName}.\n\nDescription: ${uc.description}\n\nResponsibilities: ${uc.responsibilities || 'N/A'}\nNext Activity: ${uc.scheduledActivity || 'N/A'}`);
-                            window.location.href = `mailto:?subject=${subject}&body=${body}`;
-                          }}
-                        >
-                          <MessageSquare className="w-3.5 h-3.5" />
-                          Email
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="flex-1 gap-2 text-xs h-8"
-                          onClick={() => {
-                            const text = encodeURIComponent(`*AI Use Case Update: ${uc.title}*\nAccount: ${uc.accountName}\nResponsibilities: ${uc.responsibilities || 'N/A'}\nNext Activity: ${uc.scheduledActivity || 'N/A'}`);
-                            window.open(`https://slack.com/app_redirect?channel=general&text=${text}`, '_blank');
-                            toast.info('Opening Slack... You can paste the copied info into any channel.');
-                          }}
-                        >
-                          <Users className="w-3.5 h-3.5" />
-                          Slack
-                        </Button>
-                      </div>
-
-                      <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center">
-                            <UserIcon className="w-3 h-3 text-slate-500" />
+                        <div className="flex justify-between items-start mb-4">
+                          <Badge className={cn("gap-1.5 px-2.5 py-1 text-[10px] font-black uppercase tracking-widest border-none shadow-sm", getStatusColor(uc.status))}>
+                            {getStatusIcon(uc.status)}
+                            {uc.status}
+                          </Badge>
+                        </div>
+                        
+                        <CardTitle className="text-xl font-black text-slate-900 leading-tight mb-2">{uc.title}</CardTitle>
+                        
+                        <div className="flex flex-wrap gap-3">
+                          <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-100 rounded-lg text-[10px] font-bold text-slate-600 uppercase tracking-tight">
+                            <Building2 className="w-3 h-3" />
+                            {uc.accountName || 'Unknown Account'}
                           </div>
-                          <span className="text-xs text-slate-500">{uc.authorName}</span>
+                          {account?.department && (
+                            <div className="flex items-center gap-1.5 px-2 py-1 bg-primary/5 rounded-lg text-[10px] font-bold text-primary uppercase tracking-tight">
+                              <Users className="w-3 h-3" />
+                              {account.department}
+                            </div>
+                          )}
                         </div>
-                        <div className="flex items-center gap-1 text-xs text-slate-400">
-                          <Calendar className="w-3 h-3" />
-                          {uc.createdAt?.seconds ? format(new Date(uc.createdAt.seconds * 1000), 'MMM d, yyyy') : 'Just now'}
+                      </CardHeader>
+
+                      <CardContent className="space-y-6 flex-1">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-1.5 col-span-2">
+                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Description</h4>
+                            <p className="text-sm text-slate-600 leading-relaxed line-clamp-3">{uc.description || 'No description provided.'}</p>
+                          </div>
+
+                          {uc.businessProblem && (
+                            <div className="space-y-1.5 col-span-2 p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                              <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Business Problem / Pain</h4>
+                              <p className="text-sm text-slate-700 font-medium leading-snug">{uc.businessProblem}</p>
+                            </div>
+                          )}
+
+                          <div className="space-y-1">
+                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">AI Capability</h4>
+                            <div className="flex items-center gap-2">
+                              <div className="w-1.5 h-1.5 bg-primary rounded-full" />
+                              <p className="text-xs text-slate-900 font-bold">{uc.aiCapability || 'N/A'}</p>
+                            </div>
+                          </div>
+
+                          <div className="space-y-1">
+                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">WalkMe Feature</h4>
+                            <div className="flex items-center gap-2">
+                              <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full" />
+                              <p className="text-xs text-slate-900 font-bold">{uc.walkmeFeature || 'N/A'}</p>
+                            </div>
+                          </div>
+
+                          <div className="space-y-1">
+                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Solution Advisor</h4>
+                            <div className="flex items-center gap-2">
+                              <div className="w-5 h-5 rounded-full bg-slate-100 flex items-center justify-center text-[8px] font-black text-slate-500">
+                                {uc.solutionAdvisor?.split(' ').map(n => n[0]).join('') || '??'}
+                              </div>
+                              <p className="text-xs text-slate-900 font-bold">{uc.solutionAdvisor || 'N/A'}</p>
+                            </div>
+                          </div>
+
+                          <div className="space-y-1">
+                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">User Persona</h4>
+                            <div className="flex items-center gap-2">
+                              <div className="w-1.5 h-1.5 bg-purple-500 rounded-full" />
+                              <p className="text-xs text-slate-900 font-bold">{uc.userPersona || 'N/A'}</p>
+                            </div>
+                          </div>
+
+                          {uc.jouleUsage && (
+                            <div className="space-y-1.5 col-span-2 p-3 bg-blue-50/50 rounded-2xl border border-blue-100/50">
+                              <h4 className="text-[10px] font-black text-blue-600 uppercase tracking-widest flex items-center gap-1.5">
+                                <div className="w-1.5 h-1.5 bg-blue-500 rounded-full" />
+                                SAP Joule Usage
+                              </h4>
+                              <p className="text-xs text-slate-700 font-medium leading-relaxed">{uc.jouleUsage}</p>
+                            </div>
+                          )}
+
+                          {uc.walkmeUsage && (
+                            <div className="space-y-1.5 col-span-2 p-3 bg-indigo-50/50 rounded-2xl border border-indigo-100/50">
+                              <h4 className="text-[10px] font-black text-indigo-600 uppercase tracking-widest flex items-center gap-1.5">
+                                <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full" />
+                                WalkMe AI Usage
+                              </h4>
+                              <p className="text-xs text-slate-700 font-medium leading-relaxed">{uc.walkmeUsage}</p>
+                            </div>
+                          )}
                         </div>
-                      </div>
-                    </CardContent>
-                  </>
-                );
-              })()}
-            </Card>
+                        
+                        {uc.impactMetrics && (
+                          <div className="p-4 bg-emerald-50/50 rounded-2xl border border-emerald-100">
+                            <h4 className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                              <TrendingUp className="w-3.5 h-3.5" />
+                              Impact Metrics
+                            </h4>
+                            <p className="text-xs text-slate-700 font-semibold leading-relaxed">{uc.impactMetrics}</p>
+                          </div>
+                        )}
+
+                        {uc.valueProposition && (
+                          <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10 relative overflow-hidden">
+                            <Rocket className="absolute -right-2 -bottom-2 w-16 h-16 text-primary/5 -rotate-12" />
+                            <h4 className="text-[10px] font-black text-primary uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                              <Rocket className="w-3.5 h-3.5" />
+                              Combined Value
+                            </h4>
+                            <p className="text-sm text-slate-700 italic font-medium leading-relaxed">"{uc.valueProposition}"</p>
+                          </div>
+                        )}
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                          <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Responsibilities</h4>
+                            <p className="text-xs text-slate-600 whitespace-pre-wrap font-medium">{uc.responsibilities || 'Not assigned'}</p>
+                          </div>
+                          <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100">
+                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Scheduled Activity</h4>
+                            <p className="text-xs text-slate-600 whitespace-pre-wrap font-medium">{uc.scheduledActivity || 'None scheduled'}</p>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-wrap gap-2 pt-2">
+                          {uc.demoPresented && (
+                            <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200 gap-1.5 px-2 py-1 text-[10px] font-bold uppercase tracking-tight">
+                              <Video className="w-3 h-3" />
+                              Demo Presented
+                            </Badge>
+                          )}
+                          {uc.recordingLink && (
+                            <a 
+                              href={uc.recordingLink} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-tight text-primary hover:text-primary/80 bg-primary/5 px-2.5 py-1 rounded-full border border-primary/10 transition-colors"
+                            >
+                              <LinkIcon className="w-3 h-3" />
+                              Recording
+                            </a>
+                          )}
+                        </div>
+
+                        <div className="flex items-center gap-3 pt-4 border-t border-slate-100">
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="flex-1 gap-2 text-[10px] font-black uppercase tracking-widest h-9 rounded-xl border-slate-200 hover:bg-slate-50"
+                            onClick={() => {
+                              const subject = encodeURIComponent(`AI Use Case: ${uc.title}`);
+                              const body = encodeURIComponent(`Hi,\n\nI'd like to discuss the AI Use Case "${uc.title}" for ${uc.accountName}.\n\nDescription: ${uc.description}\n\nResponsibilities: ${uc.responsibilities || 'N/A'}\nNext Activity: ${uc.scheduledActivity || 'N/A'}`);
+                              window.location.href = `mailto:?subject=${subject}&body=${body}`;
+                            }}
+                          >
+                            <Mail className="w-3.5 h-3.5" />
+                            Email
+                          </Button>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="flex-1 gap-2 text-[10px] font-black uppercase tracking-widest h-9 rounded-xl border-slate-200 hover:bg-slate-50"
+                            onClick={() => {
+                              const text = encodeURIComponent(`*AI Use Case Update: ${uc.title}*\nAccount: ${uc.accountName}\nResponsibilities: ${uc.responsibilities || 'N/A'}\nNext Activity: ${uc.scheduledActivity || 'N/A'}`);
+                              window.open(`https://slack.com/app_redirect?channel=general&text=${text}`, '_blank');
+                              toast.info('Opening Slack... You can paste the copied info into any channel.');
+                            }}
+                          >
+                            <MessageSquare className="w-3.5 h-3.5" />
+                            Slack
+                          </Button>
+                        </div>
+
+                        <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-full bg-slate-200 flex items-center justify-center">
+                              <UserIcon className="w-3 h-3 text-slate-500" />
+                            </div>
+                            <span className="text-xs text-slate-500">{uc.authorName}</span>
+                          </div>
+                          <div className="flex items-center gap-1 text-xs text-slate-400">
+                            <Calendar className="w-3 h-3" />
+                            {uc.createdAt?.seconds ? format(new Date(uc.createdAt.seconds * 1000), 'MMM d, yyyy') : 'Just now'}
+                          </div>
+                        </div>
+                      </CardContent>
+                    </>
+                  );
+                })()}
+              </Card>
+            </motion.div>
           ))
         )}
       </div>

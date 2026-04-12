@@ -230,90 +230,108 @@ export function AccountList({ accounts, isAdmin }: AccountListProps) {
         </Dialog>
       </div>
 
-      <Card className="border-slate-200 shadow-sm overflow-hidden">
+      <Card className="border-none shadow-xl shadow-slate-200/50 overflow-hidden bg-white/80 backdrop-blur-sm">
         <Table>
-          <TableHeader className="bg-slate-50/50 border-b border-slate-200">
-            <TableRow>
-              <TableHead className="font-bold text-slate-900">Customer Name</TableHead>
-              <TableHead className="font-bold text-slate-900">Region / Country</TableHead>
-              <TableHead className="font-bold text-slate-900">Account Owner / CSM</TableHead>
-              <TableHead className="font-bold text-slate-900">POCs / AI Tools</TableHead>
-              <TableHead className="font-bold text-slate-900">Deployment</TableHead>
-              <TableHead className="font-bold text-slate-900">Status</TableHead>
-              <TableHead className="text-right font-bold text-slate-900">Actions</TableHead>
+          <TableHeader className="bg-slate-900 border-b border-slate-800">
+            <TableRow className="hover:bg-slate-900">
+              <TableHead className="font-bold text-white uppercase tracking-widest text-[10px]">Customer Name</TableHead>
+              <TableHead className="font-bold text-white uppercase tracking-widest text-[10px]">Region / Country</TableHead>
+              <TableHead className="font-bold text-white uppercase tracking-widest text-[10px]">Account Owner / CSM</TableHead>
+              <TableHead className="font-bold text-white uppercase tracking-widest text-[10px]">POCs / AI Tools</TableHead>
+              <TableHead className="font-bold text-white uppercase tracking-widest text-[10px]">Deployment</TableHead>
+              <TableHead className="font-bold text-white uppercase tracking-widest text-[10px]">Status</TableHead>
+              <TableHead className="text-right font-bold text-white uppercase tracking-widest text-[10px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {accounts.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center py-12 text-slate-500">
-                  No accounts added yet.
+                <TableCell colSpan={7} className="text-center py-20 text-slate-400">
+                  <div className="flex flex-col items-center gap-2">
+                    <Building2 className="w-10 h-10 opacity-10" />
+                    <p className="text-sm font-medium">No accounts added yet.</p>
+                  </div>
                 </TableCell>
               </TableRow>
             ) : (
               accounts.map((account) => (
-                <TableRow key={account.id}>
-                  <TableCell className="font-semibold text-slate-900">{account.name}</TableCell>
+                <TableRow key={account.id} className="group hover:bg-slate-50/50 transition-colors">
+                  <TableCell className="font-bold text-slate-900 py-4">{account.name}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
-                      <Globe className="w-3 h-3 text-slate-400" />
-                      {account.region}
+                      <div className="p-1.5 bg-slate-100 rounded-lg">
+                        <Globe className="w-3 h-3 text-slate-500" />
+                      </div>
+                      <span className="text-xs font-semibold text-slate-600">{account.region}</span>
                     </div>
                   </TableCell>
                   <TableCell>
                     <div className="space-y-1">
-                      <div className="flex items-center gap-2 text-xs font-medium text-slate-700">
-                        <Building2 className="w-3 h-3 text-slate-400" />
+                      <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400 uppercase tracking-tight">
+                        <Building2 className="w-3 h-3" />
                         {account.department || 'N/A'}
                       </div>
-                      <div className="flex items-center gap-2 text-xs text-slate-500">
-                        <User className="w-3 h-3 text-slate-400" />
+                      <div className="flex items-center gap-2 text-xs font-medium text-slate-700">
+                        <div className="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center text-[8px] font-black text-primary">
+                          {account.leads.split(' ').map(n => n[0]).join('')}
+                        </div>
                         {account.leads}
                       </div>
                     </div>
                   </TableCell>
                   <TableCell>
                     <div className="space-y-1 max-w-[200px]">
-                      <div className="text-xs font-medium text-slate-700 truncate" title={account.pocs}>
+                      <div className="text-xs font-semibold text-slate-700 truncate" title={account.pocs}>
                         {account.pocs || 'No POCs'}
                       </div>
-                      <div className="text-[10px] text-slate-500 line-clamp-1 italic" title={account.otherAiTools}>
+                      <div className="text-[10px] text-slate-400 line-clamp-1 italic font-medium" title={account.otherAiTools}>
                         {account.otherAiTools || 'No AI tools info'}
                       </div>
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="flex gap-2">
-                      <Badge variant={account.jouleDeployed ? "default" : "secondary"} className={cn("text-[10px]", account.jouleDeployed && "bg-primary hover:bg-primary/90")}>
+                    <div className="flex gap-1.5">
+                      <Badge variant={account.jouleDeployed ? "default" : "secondary"} className={cn("text-[9px] font-bold uppercase tracking-tighter px-1.5 h-5", account.jouleDeployed ? "bg-blue-500 hover:bg-blue-600" : "bg-slate-100 text-slate-400")}>
                         Joule {account.jouleDeployed ? <CheckCircle2 className="w-2 h-2 ml-1" /> : <XCircle className="w-2 h-2 ml-1" />}
                       </Badge>
-                      <Badge variant={account.walkMeDeployed ? "default" : "secondary"} className={cn("text-[10px]", account.walkMeDeployed && "bg-primary hover:bg-primary/90")}>
+                      <Badge variant={account.walkMeDeployed ? "default" : "secondary"} className={cn("text-[9px] font-bold uppercase tracking-tighter px-1.5 h-5", account.walkMeDeployed ? "bg-indigo-500 hover:bg-indigo-600" : "bg-slate-100 text-slate-400")}>
                         WalkMe {account.walkMeDeployed ? <CheckCircle2 className="w-2 h-2 ml-1" /> : <XCircle className="w-2 h-2 ml-1" />}
                       </Badge>
                     </div>
                   </TableCell>
                   <TableCell>
                     <Badge 
-                      variant={account.status === 'Active' ? 'default' : account.status === 'Selected' ? 'secondary' : 'outline'}
+                      className={cn(
+                        "text-[9px] font-black uppercase tracking-widest px-2",
+                        account.status === 'Active' ? 'bg-emerald-500 hover:bg-emerald-600' : 
+                        account.status === 'Selected' ? 'bg-amber-500 hover:bg-amber-600' : 
+                        'bg-slate-200 text-slate-600 hover:bg-slate-300'
+                      )}
                     >
                       {account.status}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
+                    <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <Button 
                         variant="ghost" 
                         size="icon" 
+                        className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary"
                         onClick={() => {
                           setEditingAccount(account);
                           setFormData(account);
                           setIsAddOpen(true);
                         }}
                       >
-                        <Pencil className="w-4 h-4" />
+                        <Pencil className="w-3.5 h-3.5" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-600 hover:bg-red-50" onClick={() => handleDelete(account.id)}>
-                        <Trash2 className="w-4 h-4" />
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50" 
+                        onClick={() => handleDelete(account.id)}
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
                       </Button>
                     </div>
                   </TableCell>
