@@ -81,12 +81,31 @@ export function AccountList({ accounts, isAdmin }: AccountListProps) {
     }
   };
 
+  const walkmeOwners = [
+    'Alex Lustig',
+    'Mark Joseph',
+    'Terry Dray',
+    'Devin Simpson',
+    'Gary Wong',
+    'Jon Green',
+    'Mike Granucci',
+    'Craig Garfinkel',
+    'Avi G',
+    'Alex Loh',
+    'Shachar Hess',
+    'Katie Beech',
+    'Benjamin Bertram',
+    'Sara Eyal',
+    'Steven',
+    'Olga'
+  ].sort();
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold text-slate-900">Target Accounts</h2>
-          <p className="text-slate-500">Manage the 10 target accounts for the SWAT initiative.</p>
+          <p className="text-slate-500">Manage the target accounts for the SWAT initiative.</p>
         </div>
         <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
           <DialogTrigger render={<Button className="gap-2" />}>
@@ -99,7 +118,7 @@ export function AccountList({ accounts, isAdmin }: AccountListProps) {
             </DialogHeader>
             <div className="space-y-4 py-4 max-h-[70vh] overflow-y-auto px-1">
               <div className="space-y-2">
-                <Label>Account Name</Label>
+                <Label>Customer Name</Label>
                 <Input 
                   value={formData.name} 
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -108,10 +127,10 @@ export function AccountList({ accounts, isAdmin }: AccountListProps) {
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Region</Label>
+                  <Label>Region / Country</Label>
                   <Select 
                     value={formData.region} 
-                    onValueChange={(v: any) => setFormData({ ...formData, region: v, leads: v === 'US' ? 'Alex and Olga' : 'Steven and Mark' })}
+                    onValueChange={(v: any) => setFormData({ ...formData, region: v, leads: v === 'US' ? 'Alex Lustig' : 'Mark Joseph' })}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -149,12 +168,20 @@ export function AccountList({ accounts, isAdmin }: AccountListProps) {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Leads</Label>
-                  <Input 
+                  <Label>Account Owner / CSM</Label>
+                  <Select 
                     value={formData.leads} 
-                    onChange={(e) => setFormData({ ...formData, leads: e.target.value })}
-                    placeholder="Assigned leads"
-                  />
+                    onValueChange={(v) => setFormData({ ...formData, leads: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select owner" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {walkmeOwners.map(owner => (
+                        <SelectItem key={owner} value={owner}>{owner}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
               <div className="space-y-2">
@@ -207,9 +234,9 @@ export function AccountList({ accounts, isAdmin }: AccountListProps) {
         <Table>
           <TableHeader className="bg-slate-50/50 border-b border-slate-200">
             <TableRow>
-              <TableHead className="font-bold text-slate-900">Account Name</TableHead>
-              <TableHead className="font-bold text-slate-900">Region</TableHead>
-              <TableHead className="font-bold text-slate-900">Dept / Leads</TableHead>
+              <TableHead className="font-bold text-slate-900">Customer Name</TableHead>
+              <TableHead className="font-bold text-slate-900">Region / Country</TableHead>
+              <TableHead className="font-bold text-slate-900">Account Owner / CSM</TableHead>
               <TableHead className="font-bold text-slate-900">POCs / AI Tools</TableHead>
               <TableHead className="font-bold text-slate-900">Deployment</TableHead>
               <TableHead className="font-bold text-slate-900">Status</TableHead>

@@ -29,6 +29,14 @@ export function UseCaseList({ useCases, accounts, profile }: UseCaseListProps) {
     description: '',
     valueProposition: '',
     status: 'Idea',
+    businessProblem: '',
+    aiCapability: '',
+    walkmeFeature: '',
+    solutionAdvisor: '',
+    userPersona: '',
+    impactMetrics: '',
+    jouleUsage: '',
+    walkmeUsage: '',
     resources: '',
     scheduledActivity: '',
     responsibilities: '',
@@ -38,9 +46,10 @@ export function UseCaseList({ useCases, accounts, profile }: UseCaseListProps) {
 
   const handleExport = () => {
     const headers = [
-      'Account Name', 'Region', 'Department', 'POCs', 'Other AI Tools',
-      'Use Case Title', 'Status', 'Description', 'Value Proposition',
-      'Resources', 'Demo Presented', 'Recording Link', 'Author', 'Created At'
+      'Customer Name', 'Region / Country', 'Account Owner / CSM', 'Department', 'POCs', 'Other AI Tools',
+      'Use-Case Title', 'Stage', 'Use-Case Description', 'Business Problem / Pain', 
+      'AI Capability Used', 'WalkMe Product / Feature Involved', 'Solution Advisor', 
+      'User Persona', 'Impact Metrics', 'SAP Joule Usage', 'WalkMe AI Usage', 'Resources', 'Demo Presented', 'Recording Link', 'Author', 'Created At'
     ];
 
     const rows = useCases.map(uc => {
@@ -48,13 +57,21 @@ export function UseCaseList({ useCases, accounts, profile }: UseCaseListProps) {
       return [
         account?.name || uc.accountName || '',
         account?.region || '',
+        account?.leads || '',
         account?.department || '',
         account?.pocs || '',
         account?.otherAiTools || '',
         uc.title,
         uc.status,
         uc.description.replace(/\n/g, ' '),
-        uc.valueProposition.replace(/\n/g, ' '),
+        (uc.businessProblem || '').replace(/\n/g, ' '),
+        uc.aiCapability || '',
+        uc.walkmeFeature || '',
+        uc.solutionAdvisor || '',
+        uc.userPersona || '',
+        (uc.impactMetrics || '').replace(/\n/g, ' '),
+        (uc.jouleUsage || '').replace(/\n/g, ' '),
+        (uc.walkmeUsage || '').replace(/\n/g, ' '),
         uc.resources,
         uc.demoPresented ? 'Yes' : 'No',
         uc.recordingLink || '',
@@ -79,6 +96,35 @@ export function UseCaseList({ useCases, accounts, profile }: UseCaseListProps) {
     document.body.removeChild(link);
     toast.success('Exported to CSV successfully');
   };
+
+  const walkmeOwners = [
+    'Alex Lustig',
+    'Mark Joseph',
+    'Terry Dray',
+    'Devin Simpson',
+    'Gary Wong',
+    'Jon Green',
+    'Mike Granucci',
+    'Craig Garfinkel',
+    'Avi G',
+    'Alex Loh',
+    'Shachar Hess',
+    'Katie Beech',
+    'Benjamin Bertram',
+    'Sara Eyal',
+    'Steven',
+    'Olga'
+  ].sort();
+
+  const aiCapabilities = [
+    'Conversation / Chatbot',
+    'LM / Generative AI',
+    'Recommendations / Next Best Action',
+    'Classification / Tagging',
+    'Extraction / Summarization',
+    'Translation',
+    'Other'
+  ];
 
   const handleSave = async () => {
     if (!formData.accountId || !formData.title) {
@@ -113,6 +159,14 @@ export function UseCaseList({ useCases, accounts, profile }: UseCaseListProps) {
         description: '', 
         valueProposition: '', 
         status: 'Idea', 
+        businessProblem: '',
+        aiCapability: '',
+        walkmeFeature: '',
+        solutionAdvisor: '',
+        userPersona: '',
+        impactMetrics: '',
+        jouleUsage: '',
+        walkmeUsage: '',
         resources: '',
         scheduledActivity: '',
         responsibilities: '',
@@ -141,6 +195,7 @@ export function UseCaseList({ useCases, accounts, profile }: UseCaseListProps) {
       case 'Feasibility': return <Hammer className="w-4 h-4" />;
       case 'Validated': return <CheckCircle2 className="w-4 h-4" />;
       case 'Productized': return <Rocket className="w-4 h-4" />;
+      case 'POC': return <TrendingUp className="w-4 h-4" />;
       default: return null;
     }
   };
@@ -152,6 +207,7 @@ export function UseCaseList({ useCases, accounts, profile }: UseCaseListProps) {
       case 'Feasibility': return 'bg-amber-50 text-amber-700 border-amber-200';
       case 'Validated': return 'bg-indigo-50 text-indigo-700 border-indigo-200';
       case 'Productized': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      case 'POC': return 'bg-purple-50 text-purple-700 border-purple-200';
       default: return 'bg-slate-100 text-slate-600 border-slate-200';
     }
   };
@@ -183,7 +239,14 @@ export function UseCaseList({ useCases, accounts, profile }: UseCaseListProps) {
                   <label className="text-sm font-medium">Account</label>
                   <Select 
                     value={formData.accountId} 
-                    onValueChange={(v) => setFormData({ ...formData, accountId: v })}
+                    onValueChange={(v) => {
+                      const account = accounts.find(acc => acc.id === v);
+                      setFormData({ 
+                        ...formData, 
+                        accountId: v,
+                        solutionAdvisor: account?.leads || formData.solutionAdvisor
+                      });
+                    }}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select account">
@@ -198,7 +261,7 @@ export function UseCaseList({ useCases, accounts, profile }: UseCaseListProps) {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium">Status</label>
+                  <label className="text-sm font-medium">Stage</label>
                   <Select 
                     value={formData.status} 
                     onValueChange={(v: any) => setFormData({ ...formData, status: v })}
@@ -209,6 +272,7 @@ export function UseCaseList({ useCases, accounts, profile }: UseCaseListProps) {
                     <SelectContent>
                       <SelectItem value="Idea">Idea</SelectItem>
                       <SelectItem value="Draft">Draft</SelectItem>
+                      <SelectItem value="POC">POC</SelectItem>
                       <SelectItem value="Feasibility">Feasibility</SelectItem>
                       <SelectItem value="Validated">Validated</SelectItem>
                       <SelectItem value="Productized">Productized</SelectItem>
@@ -217,7 +281,7 @@ export function UseCaseList({ useCases, accounts, profile }: UseCaseListProps) {
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Title</label>
+                <label className="text-sm font-medium">Use-Case Title</label>
                 <Input 
                   value={formData.title} 
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
@@ -225,12 +289,111 @@ export function UseCaseList({ useCases, accounts, profile }: UseCaseListProps) {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">Description</label>
+                <label className="text-sm font-medium">Use-Case Description</label>
                 <Textarea 
                   value={formData.description} 
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="What is the use case? How does it work?"
-                  className="min-h-[100px]"
+                  className="min-h-[80px]"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Business Problem / Pain</label>
+                <Textarea 
+                  value={formData.businessProblem} 
+                  onChange={(e) => setFormData({ ...formData, businessProblem: e.target.value })}
+                  placeholder="What is the core pain point being addressed?"
+                  className="min-h-[80px]"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">AI Capability Used</label>
+                  <Select 
+                    value={aiCapabilities.includes(formData.aiCapability || '') ? formData.aiCapability : 'Other'} 
+                    onValueChange={(v) => setFormData({ ...formData, aiCapability: v === 'Other' ? '' : v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select capability" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {aiCapabilities.map(cap => (
+                        <SelectItem key={cap} value={cap}>{cap}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {(!aiCapabilities.includes(formData.aiCapability || '') || formData.aiCapability === 'Other') && (
+                    <Input 
+                      className="mt-2"
+                      value={formData.aiCapability} 
+                      onChange={(e) => setFormData({ ...formData, aiCapability: e.target.value })}
+                      placeholder="Specify custom capability"
+                    />
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">WalkMe Product / Feature Involved</label>
+                  <Input 
+                    value={formData.walkmeFeature} 
+                    onChange={(e) => setFormData({ ...formData, walkmeFeature: e.target.value })}
+                    placeholder="e.g., Action Bar, SmartTips"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">SAP Joule Usage</label>
+                  <Textarea 
+                    value={formData.jouleUsage} 
+                    onChange={(e) => setFormData({ ...formData, jouleUsage: e.target.value })}
+                    placeholder="How is SAP Joule being used?"
+                    className="min-h-[60px]"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">WalkMe AI Usage</label>
+                  <Textarea 
+                    value={formData.walkmeUsage} 
+                    onChange={(e) => setFormData({ ...formData, walkmeUsage: e.target.value })}
+                    placeholder="How is WalkMe AI being used?"
+                    className="min-h-[60px]"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Solution Advisor</label>
+                  <Select 
+                    value={formData.solutionAdvisor} 
+                    onValueChange={(v) => setFormData({ ...formData, solutionAdvisor: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select SA" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {walkmeOwners.map(owner => (
+                        <SelectItem key={owner} value={owner}>{owner}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">User Persona</label>
+                  <Input 
+                    value={formData.userPersona} 
+                    onChange={(e) => setFormData({ ...formData, userPersona: e.target.value })}
+                    placeholder="e.g., Internal (Finance), External"
+                  />
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Impact Metrics</label>
+                <Textarea 
+                  value={formData.impactMetrics} 
+                  onChange={(e) => setFormData({ ...formData, impactMetrics: e.target.value })}
+                  placeholder="What are the expected outcomes or success metrics?"
+                  className="min-h-[60px]"
                 />
               </div>
               <div className="space-y-2">
@@ -239,7 +402,7 @@ export function UseCaseList({ useCases, accounts, profile }: UseCaseListProps) {
                   value={formData.valueProposition} 
                   onChange={(e) => setFormData({ ...formData, valueProposition: e.target.value })}
                   placeholder="How do both platforms work together to deliver value?"
-                  className="min-h-[100px]"
+                  className="min-h-[80px]"
                 />
               </div>
               <div className="space-y-2">
@@ -356,21 +519,74 @@ export function UseCaseList({ useCases, accounts, profile }: UseCaseListProps) {
                       </div>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      {account?.pocs && (
-                        <div className="text-[10px] text-slate-500 bg-slate-50 p-1.5 rounded border border-slate-100">
-                          <span className="font-semibold">POCs:</span> {account.pocs}
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                        {account?.pocs && (
+                          <div className="col-span-2 text-[10px] text-slate-500 bg-slate-50 p-1.5 rounded border border-slate-100">
+                            <span className="font-semibold">POCs:</span> {account.pocs}
+                          </div>
+                        )}
+                        
+                        <div className="space-y-1 col-span-2">
+                          <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Description</h4>
+                          <p className="text-sm text-slate-600 line-clamp-3">{uc.description || 'No description provided.'}</p>
+                        </div>
+
+                        {uc.businessProblem && (
+                          <div className="space-y-1 col-span-2">
+                            <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Business Problem / Pain</h4>
+                            <p className="text-sm text-slate-600 line-clamp-2">{uc.businessProblem}</p>
+                          </div>
+                        )}
+
+                        <div className="space-y-1">
+                          <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">AI Capability</h4>
+                          <p className="text-xs text-slate-700 font-medium">{uc.aiCapability || 'N/A'}</p>
+                        </div>
+
+                        <div className="space-y-1">
+                          <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">WalkMe Feature</h4>
+                          <p className="text-xs text-slate-700 font-medium">{uc.walkmeFeature || 'N/A'}</p>
+                        </div>
+
+                        <div className="space-y-1">
+                          <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Solution Advisor</h4>
+                          <p className="text-xs text-slate-700 font-medium">{uc.solutionAdvisor || 'N/A'}</p>
+                        </div>
+
+                        <div className="space-y-1">
+                          <h4 className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">User Persona</h4>
+                          <p className="text-xs text-slate-700 font-medium">{uc.userPersona || 'N/A'}</p>
+                        </div>
+
+                        {uc.jouleUsage && (
+                          <div className="space-y-1 col-span-2 p-2 bg-blue-50/30 rounded border border-blue-100/50">
+                            <h4 className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">SAP Joule Usage</h4>
+                            <p className="text-xs text-slate-700">{uc.jouleUsage}</p>
+                          </div>
+                        )}
+
+                        {uc.walkmeUsage && (
+                          <div className="space-y-1 col-span-2 p-2 bg-indigo-50/30 rounded border border-indigo-100/50">
+                            <h4 className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">WalkMe AI Usage</h4>
+                            <p className="text-xs text-slate-700">{uc.walkmeUsage}</p>
+                          </div>
+                        )}
+                      </div>
+                      
+                      {uc.impactMetrics && (
+                        <div className="p-2.5 bg-emerald-50/50 rounded-lg border border-emerald-100">
+                          <h4 className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest mb-1 flex items-center gap-1">
+                            <TrendingUp className="w-3 h-3" />
+                            Impact Metrics
+                          </h4>
+                          <p className="text-xs text-slate-700">{uc.impactMetrics}</p>
                         </div>
                       )}
 
-                      <div className="space-y-1">
-                        <h4 className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Description</h4>
-                        <p className="text-sm text-slate-600 line-clamp-3">{uc.description || 'No description provided.'}</p>
-                      </div>
-                      
                       {uc.valueProposition && (
                         <div className="p-3 bg-primary/5 rounded-lg border border-primary/10">
-                          <h4 className="text-xs font-semibold text-primary uppercase tracking-wider mb-1 flex items-center gap-1">
-                            <TrendingUp className="w-3 h-3" />
+                          <h4 className="text-[10px] font-bold text-primary uppercase tracking-widest mb-1 flex items-center gap-1">
+                            <Rocket className="w-3 h-3" />
                             Combined Value
                           </h4>
                           <p className="text-sm text-slate-700 italic">"{uc.valueProposition}"</p>

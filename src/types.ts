@@ -18,7 +18,15 @@ export interface UseCase {
   title: string;
   description: string;
   valueProposition: string;
-  status: 'Idea' | 'Draft' | 'Feasibility' | 'Validated' | 'Productized';
+  status: 'Idea' | 'Draft' | 'Feasibility' | 'Validated' | 'Productized' | 'POC';
+  businessProblem?: string;
+  aiCapability?: string;
+  walkmeFeature?: string;
+  solutionAdvisor?: string;
+  userPersona?: string;
+  impactMetrics?: string;
+  jouleUsage?: string;
+  walkmeUsage?: string;
   resources: string;
   scheduledActivity?: string;
   responsibilities?: string;
