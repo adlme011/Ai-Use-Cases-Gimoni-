@@ -35,9 +35,20 @@
         "impactMetrics": { "type": "string", "description": "The expected impact metrics or value." },
         "jouleUsage": { "type": "string", "description": "Details on how SAP Joule is being used." },
         "walkmeUsage": { "type": "string", "description": "Details on how WalkMe AI is being used." },
-        "resources": { "type": "string", "description": "Product and R&D resources assigned." },
-        "scheduledActivity": { "type": "string", "description": "Next scheduled activities or milestones." },
-        "responsibilities": { "type": "string", "description": "Assigned responsibilities for the use case." },
+        "tasks": {
+          "type": "array",
+          "description": "List of action items, owners, and deadlines.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string" },
+              "actionItem": { "type": "string" },
+              "owner": { "type": "string" },
+              "dueDate": { "type": "string" },
+              "status": { "type": "string", "enum": ["Pending", "In Progress", "Completed"] }
+            }
+          }
+        },
         "authorId": { "type": "string", "description": "The UID of the user who created this use case." },
         "authorName": { "type": "string", "description": "The name of the user who created this use case." },
         "demoPresented": { "type": "boolean", "description": "Whether a demo has been presented." },

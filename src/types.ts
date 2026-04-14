@@ -11,6 +11,14 @@ export interface Account {
   otherAiTools?: string;
 }
 
+export interface Task {
+  id: string;
+  actionItem: string;
+  owner: string;
+  dueDate: string;
+  status: 'Pending' | 'In Progress' | 'Completed';
+}
+
 export interface UseCase {
   id: string;
   accountId: string;
@@ -27,9 +35,7 @@ export interface UseCase {
   impactMetrics?: string;
   jouleUsage?: string;
   walkmeUsage?: string;
-  resources: string;
-  scheduledActivity?: string;
-  responsibilities?: string;
+  tasks?: Task[];
   authorId: string;
   authorName: string;
   demoPresented?: boolean;

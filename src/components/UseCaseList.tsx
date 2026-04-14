@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
-import { Plus, Pencil, Trash2, MessageSquare, Rocket, Hammer, CheckCircle2, User as UserIcon, Calendar, Lightbulb, TrendingUp, Building2, Download, Video, Link as LinkIcon, Users, Mail } from 'lucide-react';
+import { Plus, Pencil, Trash2, MessageSquare, Rocket, Hammer, CheckCircle2, User as UserIcon, Calendar, Lightbulb, TrendingUp, Building2, Download, Video, Link as LinkIcon, Users, Mail, CheckCircle, Circle, Clock, X } from 'lucide-react';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -38,23 +38,41 @@ export function UseCaseList({ useCases, accounts, profile }: UseCaseListProps) {
     impactMetrics: '',
     jouleUsage: '',
     walkmeUsage: '',
-    resources: '',
-    scheduledActivity: '',
-    responsibilities: '',
+    tasks: [],
     demoPresented: false,
     recordingLink: '',
   });
+
+  const [newTask, setNewTask] = useState({ actionItem: '', owner: '', dueDate: '', status: 'Pending' as const });
+
+  const addTask = () => {
+    if (!newTask.actionItem) return;
+    const tasks = formData.tasks || [];
+    setFormData({
+      ...formData,
+      tasks: [...tasks, { ...newTask, id: Math.random().toString(36).substr(2, 9) }]
+    });
+    setNewTask({ actionItem: '', owner: '', dueDate: '', status: 'Pending' });
+  };
+
+  const removeTask = (id: string) => {
+    setFormData({
+      ...formData,
+      tasks: (formData.tasks || []).filter(t => t.id !== id)
+    });
+  };
 
   const handleExport = () => {
     const headers = [
       'Customer Name', 'Region / Country', 'Account Owner / CSM', 'Department', 'POCs', 'Other AI Tools',
       'Use-Case Title', 'Stage', 'Use-Case Description', 'Business Problem / Pain', 
       'AI Capability Used', 'WalkMe Product / Feature Involved', 'Solution Advisor', 
-      'User Persona', 'Impact Metrics', 'SAP Joule Usage', 'WalkMe AI Usage', 'Resources', 'Demo Presented', 'Recording Link', 'Author', 'Created At'
+      'User Persona', 'Impact Metrics', 'SAP Joule Usage', 'WalkMe AI Usage', 'Tasks', 'Demo Presented', 'Recording Link', 'Author', 'Created At'
     ];
 
     const rows = useCases.map(uc => {
       const account = accounts.find(a => a.id === uc.accountId);
+      const tasksStr = (uc.tasks || []).map(t => `${t.actionItem} (${t.owner}, ${t.dueDate}, ${t.status})`).join(' | ');
       return [
         account?.name || uc.accountName || '',
         account?.region || '',
@@ -73,7 +91,7 @@ export function UseCaseList({ useCases, accounts, profile }: UseCaseListProps) {
         (uc.impactMetrics || '').replace(/\n/g, ' '),
         (uc.jouleUsage || '').replace(/\n/g, ' '),
         (uc.walkmeUsage || '').replace(/\n/g, ' '),
-        uc.resources,
+        tasksStr,
         uc.demoPresented ? 'Yes' : 'No',
         uc.recordingLink || '',
         uc.authorName,
@@ -124,6 +142,12 @@ export function UseCaseList({ useCases, accounts, profile }: UseCaseListProps) {
     'Classification / Tagging',
     'Extraction / Summarization',
     'Translation',
+    'Sentiment Analysis',
+    'Image Recognition / Computer Vision',
+    'Speech to Text / Audio Transcription',
+    'Predictive Analytics / Forecasting',
+    'Personalization / Content Generation',
+    'Anomaly Detection',
     'Other'
   ];
 
@@ -168,9 +192,7 @@ export function UseCaseList({ useCases, accounts, profile }: UseCaseListProps) {
         impactMetrics: '',
         jouleUsage: '',
         walkmeUsage: '',
-        resources: '',
-        scheduledActivity: '',
-        responsibilities: '',
+        tasks: [],
         demoPresented: false,
         recordingLink: '',
       });
@@ -307,39 +329,37 @@ export function UseCaseList({ useCases, accounts, profile }: UseCaseListProps) {
                   className="min-h-[80px]"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">AI Capability Used</label>
-                  <Select 
-                    value={aiCapabilities.includes(formData.aiCapability || '') ? formData.aiCapability : 'Other'} 
-                    onValueChange={(v) => setFormData({ ...formData, aiCapability: v === 'Other' ? '' : v })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select capability" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {aiCapabilities.map(cap => (
-                        <SelectItem key={cap} value={cap}>{cap}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {(!aiCapabilities.includes(formData.aiCapability || '') || formData.aiCapability === 'Other') && (
-                    <Input 
-                      className="mt-2"
-                      value={formData.aiCapability} 
-                      onChange={(e) => setFormData({ ...formData, aiCapability: e.target.value })}
-                      placeholder="Specify custom capability"
-                    />
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">WalkMe Product / Feature Involved</label>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">AI Capability Used</label>
+                <Select 
+                  value={aiCapabilities.includes(formData.aiCapability || '') ? formData.aiCapability : 'Other'} 
+                  onValueChange={(v) => setFormData({ ...formData, aiCapability: v === 'Other' ? '' : v })}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select capability" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-[300px]">
+                    {aiCapabilities.map(cap => (
+                      <SelectItem key={cap} value={cap}>{cap}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {(!aiCapabilities.includes(formData.aiCapability || '') || formData.aiCapability === 'Other') && (
                   <Input 
-                    value={formData.walkmeFeature} 
-                    onChange={(e) => setFormData({ ...formData, walkmeFeature: e.target.value })}
-                    placeholder="e.g., Action Bar, SmartTips"
+                    className="mt-2"
+                    value={formData.aiCapability} 
+                    onChange={(e) => setFormData({ ...formData, aiCapability: e.target.value })}
+                    placeholder="Specify custom capability"
                   />
-                </div>
+                )}
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">WalkMe Product / Feature Involved</label>
+                <Input 
+                  value={formData.walkmeFeature} 
+                  onChange={(e) => setFormData({ ...formData, walkmeFeature: e.target.value })}
+                  placeholder="e.g., Action Bar, SmartTips"
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -366,8 +386,8 @@ export function UseCaseList({ useCases, accounts, profile }: UseCaseListProps) {
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Solution Advisor</label>
                   <Select 
-                    value={formData.solutionAdvisor} 
-                    onValueChange={(v) => setFormData({ ...formData, solutionAdvisor: v })}
+                    value={walkmeOwners.includes(formData.solutionAdvisor || '') ? formData.solutionAdvisor : 'Other'} 
+                    onValueChange={(v) => setFormData({ ...formData, solutionAdvisor: v === 'Other' ? '' : v })}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select SA" />
@@ -376,8 +396,17 @@ export function UseCaseList({ useCases, accounts, profile }: UseCaseListProps) {
                       {walkmeOwners.map(owner => (
                         <SelectItem key={owner} value={owner}>{owner}</SelectItem>
                       ))}
+                      <SelectItem value="Other">Add New SA...</SelectItem>
                     </SelectContent>
                   </Select>
+                  {(!walkmeOwners.includes(formData.solutionAdvisor || '') || formData.solutionAdvisor === 'Other') && (
+                    <Input 
+                      className="mt-2"
+                      value={formData.solutionAdvisor} 
+                      onChange={(e) => setFormData({ ...formData, solutionAdvisor: e.target.value })}
+                      placeholder="Enter SA Name"
+                    />
+                  )}
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium">User Persona</label>
@@ -406,31 +435,88 @@ export function UseCaseList({ useCases, accounts, profile }: UseCaseListProps) {
                   className="min-h-[80px]"
                 />
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Resources & Feasibility (Product/R&D)</label>
-                <Input 
-                  value={formData.resources} 
-                  onChange={(e) => setFormData({ ...formData, resources: e.target.value })}
-                  placeholder="Assigned resources or feasibility notes"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Responsibilities</label>
-                <Textarea 
-                  value={formData.responsibilities} 
-                  onChange={(e) => setFormData({ ...formData, responsibilities: e.target.value })}
-                  placeholder="Who is responsible for what?"
-                  className="min-h-[60px]"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Scheduled Activity</label>
-                <Textarea 
-                  value={formData.scheduledActivity} 
-                  onChange={(e) => setFormData({ ...formData, scheduledActivity: e.target.value })}
-                  placeholder="Dates and descriptions for upcoming tasks or milestones"
-                  className="min-h-[80px]"
-                />
+
+              {/* Task Manager Section */}
+              <div className="space-y-4 pt-4 border-t border-slate-100">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                    <Clock className="w-4 h-4 text-primary" />
+                    Task Manager / Action Items
+                  </h3>
+                </div>
+                
+                <div className="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                  <div className="grid grid-cols-1 gap-3">
+                    <Input 
+                      placeholder="Action Item / Task"
+                      value={newTask.actionItem}
+                      onChange={(e) => setNewTask({ ...newTask, actionItem: e.target.value })}
+                    />
+                    <div className="grid grid-cols-2 gap-3">
+                      <Input 
+                        placeholder="Owner"
+                        value={newTask.owner}
+                        onChange={(e) => setNewTask({ ...newTask, owner: e.target.value })}
+                      />
+                      <Input 
+                        type="date"
+                        value={newTask.dueDate}
+                        onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Select 
+                        value={newTask.status}
+                        onValueChange={(v: any) => setNewTask({ ...newTask, status: v })}
+                      >
+                        <SelectTrigger className="flex-1">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Pending">Pending</SelectItem>
+                          <SelectItem value="In Progress">In Progress</SelectItem>
+                          <SelectItem value="Completed">Completed</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Button type="button" onClick={addTask} size="sm" className="gap-2">
+                        <Plus className="w-4 h-4" />
+                        Add Task
+                      </Button>
+                    </div>
+                  </div>
+
+                  {formData.tasks && formData.tasks.length > 0 && (
+                    <div className="space-y-2 mt-4">
+                      {formData.tasks.map((task) => (
+                        <div key={task.id} className="flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200 shadow-sm group">
+                          <div className="flex items-center gap-3">
+                            {task.status === 'Completed' ? (
+                              <CheckCircle className="w-4 h-4 text-emerald-500" />
+                            ) : task.status === 'In Progress' ? (
+                              <Clock className="w-4 h-4 text-amber-500" />
+                            ) : (
+                              <Circle className="w-4 h-4 text-slate-300" />
+                            )}
+                            <div>
+                              <p className="text-xs font-bold text-slate-900">{task.actionItem}</p>
+                              <p className="text-[10px] text-slate-500">
+                                {task.owner} • {task.dueDate || 'No date'}
+                              </p>
+                            </div>
+                          </div>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-7 w-7 text-slate-400 hover:text-red-500"
+                            onClick={() => removeTask(task.id)}
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-4 pt-2">
                 <label className="flex items-center gap-2 cursor-pointer">
@@ -620,16 +706,51 @@ export function UseCaseList({ useCases, accounts, profile }: UseCaseListProps) {
                           </div>
                         )}
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100">
-                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Responsibilities</h4>
-                            <p className="text-xs text-slate-600 whitespace-pre-wrap font-medium">{uc.responsibilities || 'Not assigned'}</p>
+                        {/* Tasks Display */}
+                        {uc.tasks && uc.tasks.length > 0 && (
+                          <div className="space-y-3">
+                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                              <Clock className="w-3.5 h-3.5" />
+                              Action Items & Timeline
+                            </h4>
+                            <div className="space-y-2">
+                              {uc.tasks.map((task) => (
+                                <div key={task.id} className="flex items-center justify-between bg-slate-50/50 p-2.5 rounded-xl border border-slate-100">
+                                  <div className="flex items-center gap-3">
+                                    {task.status === 'Completed' ? (
+                                      <CheckCircle className="w-4 h-4 text-emerald-500" />
+                                    ) : task.status === 'In Progress' ? (
+                                      <Clock className="w-4 h-4 text-amber-500" />
+                                    ) : (
+                                      <Circle className="w-4 h-4 text-slate-300" />
+                                    )}
+                                    <div>
+                                      <p className="text-xs font-bold text-slate-900">{task.actionItem}</p>
+                                      <div className="flex items-center gap-2 mt-0.5">
+                                        <span className="text-[10px] text-slate-500 flex items-center gap-1">
+                                          <UserIcon className="w-2.5 h-2.5" />
+                                          {task.owner || 'Unassigned'}
+                                        </span>
+                                        <span className="text-[10px] text-slate-500 flex items-center gap-1">
+                                          <Calendar className="w-2.5 h-2.5" />
+                                          {task.dueDate || 'No date'}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <Badge variant="outline" className={cn(
+                                    "text-[8px] font-black uppercase px-1.5 py-0",
+                                    task.status === 'Completed' ? "bg-emerald-50 text-emerald-600 border-emerald-100" :
+                                    task.status === 'In Progress' ? "bg-amber-50 text-amber-600 border-amber-100" :
+                                    "bg-slate-100 text-slate-500 border-slate-200"
+                                  )}>
+                                    {task.status}
+                                  </Badge>
+                                </div>
+                              ))}
+                            </div>
                           </div>
-                          <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100">
-                            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Scheduled Activity</h4>
-                            <p className="text-xs text-slate-600 whitespace-pre-wrap font-medium">{uc.scheduledActivity || 'None scheduled'}</p>
-                          </div>
-                        </div>
+                        )}
 
                         <div className="flex flex-wrap gap-2 pt-2">
                           {uc.demoPresented && (
@@ -658,7 +779,7 @@ export function UseCaseList({ useCases, accounts, profile }: UseCaseListProps) {
                             className="flex-1 gap-2 text-[10px] font-black uppercase tracking-widest h-9 rounded-xl border-slate-200 hover:bg-slate-50"
                             onClick={() => {
                               const subject = encodeURIComponent(`AI Use Case: ${uc.title}`);
-                              const body = encodeURIComponent(`Hi,\n\nI'd like to discuss the AI Use Case "${uc.title}" for ${uc.accountName}.\n\nDescription: ${uc.description}\n\nResponsibilities: ${uc.responsibilities || 'N/A'}\nNext Activity: ${uc.scheduledActivity || 'N/A'}`);
+                              const body = encodeURIComponent(`Hi,\n\nI'd like to discuss the AI Use Case "${uc.title}" for ${uc.accountName}.\n\nDescription: ${uc.description}`);
                               window.location.href = `mailto:?subject=${subject}&body=${body}`;
                             }}
                           >
@@ -670,7 +791,7 @@ export function UseCaseList({ useCases, accounts, profile }: UseCaseListProps) {
                             size="sm" 
                             className="flex-1 gap-2 text-[10px] font-black uppercase tracking-widest h-9 rounded-xl border-slate-200 hover:bg-slate-50"
                             onClick={() => {
-                              const text = encodeURIComponent(`*AI Use Case Update: ${uc.title}*\nAccount: ${uc.accountName}\nResponsibilities: ${uc.responsibilities || 'N/A'}\nNext Activity: ${uc.scheduledActivity || 'N/A'}`);
+                              const text = encodeURIComponent(`*AI Use Case Update: ${uc.title}*\nAccount: ${uc.accountName}`);
                               window.open(`https://slack.com/app_redirect?channel=general&text=${text}`, '_blank');
                               toast.info('Opening Slack... You can paste the copied info into any channel.');
                             }}
