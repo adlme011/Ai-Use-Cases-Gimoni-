@@ -81,6 +81,41 @@ export function UseCaseList({ useCases, accounts, profile }: UseCaseListProps) {
   const [prioritizationGoal, setPrioritizationGoal] = useState('all');
   const [aiPrompt, setAiPrompt] = useState('');
   const [isGeneratingFromPrompt, setIsGeneratingFromPrompt] = useState(false);
+  const [isFormView, setIsFormView] = useState(false);
+
+  const resetForm = () => {
+    setFormData({
+      accountId: '',
+      title: '',
+      summary: '',
+      description: '',
+      problemStatement: '',
+      solution: '',
+      valueProposition: '',
+      status: 'Idea',
+      businessProblem: '',
+      aiCapability: '',
+      walkmeFeature: '',
+      solutionAdvisor: '',
+      userPersona: '',
+      impactMetrics: '',
+      jouleUsage: '',
+      walkmeUsage: '',
+      roiLevel: 'Medium',
+      implementationEffort: 'Medium',
+      useCaseType: 'Automation',
+      businessFunction: 'Operations',
+      realWorldExample: '',
+      architectureDiagram: '',
+      examplePrompt: '',
+      tasks: [],
+      demoPresented: false,
+      recordingLink: '',
+    });
+    setEditingUseCase(null);
+    setIsFormView(false);
+    setAiPrompt('');
+  };
 
   const toggleBookmark = (id: string) => {
     setBookmarkedIds(prev => 
@@ -263,36 +298,7 @@ export function UseCaseList({ useCases, accounts, profile }: UseCaseListProps) {
         });
         toast.success('Use case added');
       }
-      setIsAddOpen(false);
-      setEditingUseCase(null);
-      setFormData({ 
-        accountId: '', 
-        title: '', 
-        summary: '',
-        description: '', 
-        problemStatement: '',
-        solution: '',
-        valueProposition: '', 
-        status: 'Idea', 
-        businessProblem: '',
-        aiCapability: '',
-        walkmeFeature: '',
-        solutionAdvisor: '',
-        userPersona: '',
-        impactMetrics: '',
-        jouleUsage: '',
-        walkmeUsage: '',
-        roiLevel: 'Medium',
-        implementationEffort: 'Medium',
-        useCaseType: 'Automation',
-        businessFunction: 'Operations',
-        realWorldExample: '',
-        architectureDiagram: '',
-        examplePrompt: '',
-        tasks: [],
-        demoPresented: false,
-        recordingLink: '',
-      });
+      resetForm();
     } catch (error) {
       handleFirestoreError(error, OperationType.WRITE, 'useCases');
     }
@@ -529,470 +535,526 @@ export function UseCaseList({ useCases, accounts, profile }: UseCaseListProps) {
                 <Download className="w-4 h-4" />
                 Export
               </Button>
-              <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-                <DialogTrigger render={
-                  <Button className="h-14 px-8 gap-2 rounded-2xl shadow-lg shadow-primary/20">
-                    <Plus className="w-5 h-5" />
-                    Add Use Case
-                  </Button>
-                } />
-          <DialogContent className="sm:max-w-[600px]">
-            <DialogHeader>
-              <DialogTitle>{editingUseCase ? 'Edit Use Case' : 'Identify New AI Use Case'}</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 py-4 max-h-[70vh] overflow-y-auto px-1">
-              {!editingUseCase && (
-                <div className="p-4 bg-primary/5 border border-primary/10 rounded-2xl space-y-3 mb-6">
-                  <div className="flex items-center gap-2 text-primary">
-                    <Sparkles className="w-4 h-4" />
-                    <span className="text-xs font-bold uppercase tracking-wider">AI Draft Assistant</span>
-                  </div>
-                  <p className="text-xs text-slate-500">Describe the use case in plain English and let AI fill in the details.</p>
-                  <div className="flex gap-2">
-                    <Textarea 
-                      placeholder="e.g., A way to help HR managers automatically summarize candidate resumes using LLMs and show the summary in a WalkMe popup..."
-                      value={aiPrompt}
-                      onChange={(e) => setAiPrompt(e.target.value)}
-                      className="text-sm bg-white border-primary/20 focus:ring-primary min-h-[80px]"
-                    />
-                    <Button 
-                      size="icon"
-                      className="h-auto w-12 shrink-0"
-                      onClick={handleGenerateFromPrompt}
-                      disabled={isGeneratingFromPrompt}
-                    >
-                      {isGeneratingFromPrompt ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wand2 className="w-4 h-4" />}
-                    </Button>
-                  </div>
-                </div>
-              )}
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Account</label>
-                  <Select 
-                    value={formData.accountId} 
-                    onValueChange={(v) => {
-                      const account = accounts.find(acc => acc.id === v);
-                      setFormData({ 
-                        ...formData, 
-                        accountId: v,
-                        solutionAdvisor: account?.leads || formData.solutionAdvisor
-                      });
-                    }}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select account">
-                        {accounts.find(acc => acc.id === formData.accountId)?.name}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      {accounts.map(acc => (
-                        <SelectItem key={acc.id} value={acc.id}>{acc.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Stage</label>
-                  <Select 
-                    value={formData.status} 
-                    onValueChange={(v: any) => setFormData({ ...formData, status: v })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Idea">Idea</SelectItem>
-                      <SelectItem value="Draft">Draft</SelectItem>
-                      <SelectItem value="POC">POC</SelectItem>
-                      <SelectItem value="Feasibility">Feasibility</SelectItem>
-                      <SelectItem value="Validated">Validated</SelectItem>
-                      <SelectItem value="Productized">Productized</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Use-Case Title</label>
-                <Input 
-                  value={formData.title} 
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="e.g., Automated Expense Categorization"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">One-Line Summary</label>
-                <Input 
-                  value={formData.summary} 
-                  onChange={(e) => setFormData({ ...formData, summary: e.target.value })}
-                  placeholder="A punchy 1-line summary for the card view"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Problem Statement (Before AI)</label>
-                <Textarea 
-                  value={formData.problemStatement} 
-                  onChange={(e) => setFormData({ ...formData, problemStatement: e.target.value })}
-                  placeholder="What is the current manual process or pain point?"
-                  className="min-h-[60px]"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Solution (What AI Does)</label>
-                <Textarea 
-                  value={formData.solution} 
-                  onChange={(e) => setFormData({ ...formData, solution: e.target.value })}
-                  placeholder="How does AI solve this problem specifically?"
-                  className="min-h-[60px]"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Detailed Description</label>
-                <Textarea 
-                  value={formData.description} 
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  placeholder="Full technical or process details..."
-                  className="min-h-[80px]"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Use Case Type</label>
-                  <Select 
-                    value={formData.useCaseType} 
-                    onValueChange={(v: any) => setFormData({ ...formData, useCaseType: v })}
-                  >
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Automation">Automation</SelectItem>
-                      <SelectItem value="Content Generation">Content Generation</SelectItem>
-                      <SelectItem value="Decision Support">Decision Support</SelectItem>
-                      <SelectItem value="Other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Business Function</label>
-                  <Select 
-                    value={formData.businessFunction} 
-                    onValueChange={(v: any) => setFormData({ ...formData, businessFunction: v })}
-                  >
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Marketing">Marketing</SelectItem>
-                      <SelectItem value="Operations">Operations</SelectItem>
-                      <SelectItem value="Customer Support">Customer Support</SelectItem>
-                      <SelectItem value="Sales">Sales</SelectItem>
-                      <SelectItem value="HR">HR</SelectItem>
-                      <SelectItem value="Finance">Finance</SelectItem>
-                      <SelectItem value="Engineering">Engineering</SelectItem>
-                      <SelectItem value="Other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
+              <Button 
+                className="h-14 px-8 gap-2 rounded-2xl shadow-lg shadow-primary/20"
+                onClick={() => {
+                  resetForm();
+                  setIsFormView(true);
+                }}
+              >
+                <Plus className="w-5 h-5" />
+                Add Use Case
+              </Button>
+            </div>
+          </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">ROI Level</label>
-                  <Select 
-                    value={formData.roiLevel} 
-                    onValueChange={(v: any) => setFormData({ ...formData, roiLevel: v })}
-                  >
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="High">High</SelectItem>
-                      <SelectItem value="Medium">Medium</SelectItem>
-                      <SelectItem value="Experimental">Experimental</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Implementation Effort</label>
-                  <Select 
-                    value={formData.implementationEffort} 
-                    onValueChange={(v: any) => setFormData({ ...formData, implementationEffort: v })}
-                  >
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Low">Low</SelectItem>
-                      <SelectItem value="Medium">Medium</SelectItem>
-                      <SelectItem value="High">High</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Real-World Example (Company/Workflow)</label>
-                <Input 
-                  value={formData.realWorldExample} 
-                  onChange={(e) => setFormData({ ...formData, realWorldExample: e.target.value })}
-                  placeholder="e.g., Used by X company for Y..."
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Example Prompt / Workflow</label>
-                <Textarea 
-                  value={formData.examplePrompt} 
-                  onChange={(e) => setFormData({ ...formData, examplePrompt: e.target.value })}
-                  placeholder="Paste a sample prompt or describe the workflow steps..."
-                  className="min-h-[80px]"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Architecture Diagram (Description/URL)</label>
-                <Input 
-                  value={formData.architectureDiagram} 
-                  onChange={(e) => setFormData({ ...formData, architectureDiagram: e.target.value })}
-                  placeholder="Describe the architecture or provide a diagram URL"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Business Problem / Pain</label>
-                <Textarea 
-                  value={formData.businessProblem} 
-                  onChange={(e) => setFormData({ ...formData, businessProblem: e.target.value })}
-                  placeholder="What is the core pain point being addressed?"
-                  className="min-h-[80px]"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">AI Capability Used</label>
-                <Select 
-                  value={aiCapabilities.includes(formData.aiCapability || '') ? formData.aiCapability : 'Other'} 
-                  onValueChange={(v) => setFormData({ ...formData, aiCapability: v === 'Other' ? '' : v })}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select capability" />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-[300px]">
-                    {aiCapabilities.map(cap => (
-                      <SelectItem key={cap} value={cap}>{cap}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {(!aiCapabilities.includes(formData.aiCapability || '') || formData.aiCapability === 'Other') && (
-                  <Input 
-                    className="mt-2"
-                    value={formData.aiCapability} 
-                    onChange={(e) => setFormData({ ...formData, aiCapability: e.target.value })}
-                    placeholder="Specify custom capability"
-                  />
-                )}
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">WalkMe Product / Feature Involved</label>
-                <Select 
-                  value={walkmeFeatures.includes(formData.walkmeFeature || '') ? formData.walkmeFeature : 'Other'} 
-                  onValueChange={(v) => setFormData({ ...formData, walkmeFeature: v === 'Other' ? '' : v })}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select WalkMe feature" />
-                  </SelectTrigger>
-                  <SelectContent className="max-h-[300px]">
-                    {walkmeFeatures.map(feat => (
-                      <SelectItem key={feat} value={feat}>{feat}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {(!walkmeFeatures.includes(formData.walkmeFeature || '') || formData.walkmeFeature === 'Other') && (
-                  <Input 
-                    className="mt-2"
-                    value={formData.walkmeFeature} 
-                    onChange={(e) => setFormData({ ...formData, walkmeFeature: e.target.value })}
-                    placeholder="Specify custom feature"
-                  />
-                )}
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">SAP Joule Usage</label>
-                  <Textarea 
-                    value={formData.jouleUsage} 
-                    onChange={(e) => setFormData({ ...formData, jouleUsage: e.target.value })}
-                    placeholder="How is SAP Joule being used?"
-                    className="min-h-[60px]"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">WalkMe AI Usage</label>
-                  <Textarea 
-                    value={formData.walkmeUsage} 
-                    onChange={(e) => setFormData({ ...formData, walkmeUsage: e.target.value })}
-                    placeholder="How is WalkMe AI being used?"
-                    className="min-h-[60px]"
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Solution Advisor</label>
-                  <Select 
-                    value={walkmeOwners.includes(formData.solutionAdvisor || '') ? formData.solutionAdvisor : 'Other'} 
-                    onValueChange={(v) => setFormData({ ...formData, solutionAdvisor: v === 'Other' ? '' : v })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select SA" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {walkmeOwners.map(owner => (
-                        <SelectItem key={owner} value={owner}>{owner}</SelectItem>
-                      ))}
-                      <SelectItem value="Other">Add New SA...</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {(!walkmeOwners.includes(formData.solutionAdvisor || '') || formData.solutionAdvisor === 'Other') && (
-                    <Input 
-                      className="mt-2"
-                      value={formData.solutionAdvisor} 
-                      onChange={(e) => setFormData({ ...formData, solutionAdvisor: e.target.value })}
-                      placeholder="Enter SA Name"
-                    />
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">User Persona</label>
-                  <Input 
-                    value={formData.userPersona} 
-                    onChange={(e) => setFormData({ ...formData, userPersona: e.target.value })}
-                    placeholder="e.g., Internal (Finance), External"
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Impact Metrics</label>
-                <Textarea 
-                  value={formData.impactMetrics} 
-                  onChange={(e) => setFormData({ ...formData, impactMetrics: e.target.value })}
-                  placeholder="What are the expected outcomes or success metrics?"
-                  className="min-h-[60px]"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Joule + WalkMe Value Proposition</label>
-                <Textarea 
-                  value={formData.valueProposition} 
-                  onChange={(e) => setFormData({ ...formData, valueProposition: e.target.value })}
-                  placeholder="How do both platforms work together to deliver value?"
-                  className="min-h-[80px]"
-                />
-              </div>
-
-              {/* Task Manager Section */}
-              <div className="space-y-4 pt-4 border-t border-slate-100">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-primary" />
-                    Task Manager / Action Items
-                  </h3>
-                </div>
-                
-                <div className="space-y-3 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                  <div className="grid grid-cols-1 gap-3">
-                    <Input 
-                      placeholder="Action Item / Task"
-                      value={newTask.actionItem}
-                      onChange={(e) => setNewTask({ ...newTask, actionItem: e.target.value })}
-                    />
-                    <div className="grid grid-cols-2 gap-3">
-                      <Input 
-                        placeholder="Owner"
-                        value={newTask.owner}
-                        onChange={(e) => setNewTask({ ...newTask, owner: e.target.value })}
-                      />
-                      <Input 
-                        type="date"
-                        value={newTask.dueDate}
-                        onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
-                      />
+          <Dialog open={isFormView} onOpenChange={setIsFormView}>
+            <DialogContent className="sm:max-w-[1000px] max-h-[95vh] overflow-hidden flex flex-col p-0 gap-0 border-none shadow-2xl">
+              <div className="p-8 bg-slate-900 text-white relative">
+                <div className="flex justify-between items-start gap-8">
+                  <div className="space-y-4 flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Badge variant="outline" className="text-[10px] font-black uppercase tracking-widest border-white/20 text-white/60">
+                        {editingUseCase ? 'Editing Mode' : 'Creation Mode'}
+                      </Badge>
                     </div>
-                    <div className="flex gap-2">
-                      <Select 
-                        value={newTask.status}
-                        onValueChange={(v: any) => setNewTask({ ...newTask, status: v })}
-                      >
-                        <SelectTrigger className="flex-1">
-                          <SelectValue />
+                    <Input 
+                      className="text-4xl font-black bg-transparent border-none text-white placeholder:text-white/20 p-0 focus-visible:ring-0 h-auto"
+                      placeholder="Use Case Title"
+                      value={formData.title}
+                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    />
+                    <Input 
+                      className="text-lg font-medium bg-transparent border-none text-white/60 placeholder:text-white/20 p-0 focus-visible:ring-0 h-auto"
+                      placeholder="Short summary of the value proposition..."
+                      value={formData.summary}
+                      onChange={(e) => setFormData({ ...formData, summary: e.target.value })}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-3 min-w-[240px]">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Lifecycle Stage</label>
+                      <Select value={formData.status} onValueChange={(v: any) => setFormData({ ...formData, status: v })}>
+                        <SelectTrigger className="bg-white/10 border-white/20 text-white h-11">
+                          <SelectValue placeholder="Stage" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Pending">Pending</SelectItem>
-                          <SelectItem value="In Progress">In Progress</SelectItem>
-                          <SelectItem value="Completed">Completed</SelectItem>
+                          <SelectItem value="Idea">Idea</SelectItem>
+                          <SelectItem value="Draft">Draft</SelectItem>
+                          <SelectItem value="POC">POC</SelectItem>
+                          <SelectItem value="Feasibility">Feasibility</SelectItem>
+                          <SelectItem value="Validated">Validated</SelectItem>
+                          <SelectItem value="Productized">Productized</SelectItem>
                         </SelectContent>
                       </Select>
-                      <Button type="button" onClick={addTask} size="sm" className="gap-2">
-                        <Plus className="w-4 h-4" />
-                        Add Task
-                      </Button>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-white/40 ml-1">Target Account</label>
+                      <Select 
+                        value={formData.accountId} 
+                        onValueChange={(v) => {
+                          const account = accounts.find(acc => acc.id === v);
+                          setFormData({ 
+                            ...formData, 
+                            accountId: v,
+                            solutionAdvisor: account?.leads || formData.solutionAdvisor
+                          });
+                        }}
+                      >
+                        <SelectTrigger className="bg-white/10 border-white/20 text-white h-11">
+                          <SelectValue placeholder="Select Account" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {accounts.map(acc => (
+                            <SelectItem key={acc.id} value={acc.id}>{acc.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
-
-                  {formData.tasks && formData.tasks.length > 0 && (
-                    <div className="space-y-2 mt-4">
-                      {formData.tasks.map((task) => (
-                        <div key={task.id} className="flex items-center justify-between bg-white p-3 rounded-xl border border-slate-200 shadow-sm group">
-                          <div className="flex items-center gap-3">
-                            {task.status === 'Completed' ? (
-                              <CheckCircle className="w-4 h-4 text-emerald-500" />
-                            ) : task.status === 'In Progress' ? (
-                              <Clock className="w-4 h-4 text-amber-500" />
-                            ) : (
-                              <Circle className="w-4 h-4 text-slate-300" />
-                            )}
-                            <div>
-                              <p className="text-xs font-bold text-slate-900">{task.actionItem}</p>
-                              <p className="text-[10px] text-slate-500">
-                                {task.owner} • {task.dueDate || 'No date'}
-                              </p>
-                            </div>
-                          </div>
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-7 w-7 text-slate-400 hover:text-red-500"
-                            onClick={() => removeTask(task.id)}
-                          >
-                            <X className="w-3.5 h-3.5" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4 pt-2">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input 
-                    type="checkbox" 
-                    checked={formData.demoPresented} 
-                    onChange={(e) => setFormData({ ...formData, demoPresented: e.target.checked })}
-                    className="rounded border-slate-300 text-primary focus:ring-primary"
-                  />
-                  <span className="text-sm">Demo Presented</span>
-                </label>
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Recording Link</label>
-                <Input 
-                  value={formData.recordingLink} 
-                  onChange={(e) => setFormData({ ...formData, recordingLink: e.target.value })}
-                  placeholder="https://..."
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsAddOpen(false)}>Cancel</Button>
-              <Button onClick={handleSave}>Save Use Case</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-      </div>
-    </div>
+
+              <Tabs defaultValue="overview" className="flex-1 flex flex-col overflow-hidden bg-white">
+                <div className="px-8 border-b border-slate-100 bg-white">
+                  <TabsList className="bg-transparent h-14 p-0 gap-8">
+                    <TabsTrigger value="overview" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-14 px-0 font-bold text-slate-500">Overview</TabsTrigger>
+                    <TabsTrigger value="blueprint" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-14 px-0 font-bold text-slate-500">Blueprint</TabsTrigger>
+                    <TabsTrigger value="tasks" className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none h-14 px-0 font-bold text-slate-500">Tasks & Timeline</TabsTrigger>
+                  </TabsList>
+                </div>
+
+                <ScrollArea className="flex-1">
+                  <div className="p-8">
+                    <TabsContent value="overview" className="m-0 space-y-12">
+                      {!editingUseCase && (
+                        <div className="p-6 bg-primary/5 border border-primary/10 rounded-3xl space-y-4">
+                          <div className="flex items-center gap-2 text-primary">
+                            <Sparkles className="w-5 h-5" />
+                            <span className="text-sm font-black uppercase tracking-wider">AI Draft Assistant</span>
+                          </div>
+                          <p className="text-sm text-slate-600">Describe the use case in plain English and let AI populate the technical fields for you.</p>
+                          <div className="flex gap-3">
+                            <Textarea 
+                              placeholder="e.g., A way to help HR managers automatically summarize candidate resumes using LLMs and show the summary in a WalkMe popup..."
+                              value={aiPrompt}
+                              onChange={(e) => setAiPrompt(e.target.value)}
+                              className="text-sm bg-white border-primary/20 focus:ring-primary min-h-[100px] rounded-2xl"
+                            />
+                            <Button 
+                              className="h-auto w-16 shrink-0 rounded-2xl flex flex-col gap-2"
+                              onClick={handleGenerateFromPrompt}
+                              disabled={isGeneratingFromPrompt}
+                            >
+                              {isGeneratingFromPrompt ? <Loader2 className="w-5 h-5 animate-spin" /> : <Wand2 className="w-5 h-5" />}
+                              <span className="text-[10px] font-bold uppercase">Draft</span>
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+                        <div className="lg:col-span-2 space-y-12">
+                          <section className="space-y-6">
+                            <h3 className="text-xl font-bold flex items-center gap-2">
+                              <Info className="w-5 h-5 text-primary" />
+                              Problem & Solution
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              <div className="space-y-3">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">The Problem Statement</label>
+                                <Textarea 
+                                  value={formData.problemStatement || formData.businessProblem} 
+                                  onChange={(e) => setFormData({ ...formData, problemStatement: e.target.value })}
+                                  placeholder="What is the current manual process or pain point?"
+                                  className="min-h-[120px] bg-slate-50 border-slate-200 rounded-2xl focus:ring-primary"
+                                />
+                              </div>
+                              <div className="space-y-3">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-primary ml-1">The AI Solution</label>
+                                <Textarea 
+                                  value={formData.solution || formData.description} 
+                                  onChange={(e) => setFormData({ ...formData, solution: e.target.value })}
+                                  placeholder="How does AI solve this problem specifically?"
+                                  className="min-h-[120px] bg-primary/5 border-primary/10 rounded-2xl focus:ring-primary"
+                                />
+                              </div>
+                            </div>
+                          </section>
+
+                          <section className="space-y-6">
+                            <h3 className="text-xl font-bold flex items-center gap-2">
+                              <TrendingUp className="w-5 h-5 text-emerald-500" />
+                              Value & Impact
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              <div className="space-y-3">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Impact Metrics</label>
+                                <Textarea 
+                                  value={formData.impactMetrics} 
+                                  onChange={(e) => setFormData({ ...formData, impactMetrics: e.target.value })}
+                                  placeholder="What are the expected outcomes or success metrics?"
+                                  className="min-h-[100px] bg-slate-50 border-slate-200 rounded-2xl"
+                                />
+                              </div>
+                              <div className="space-y-3">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Value Proposition</label>
+                                <Textarea 
+                                  value={formData.valueProposition} 
+                                  onChange={(e) => setFormData({ ...formData, valueProposition: e.target.value })}
+                                  placeholder="How do both platforms work together to deliver value?"
+                                  className="min-h-[100px] bg-slate-50 border-slate-200 rounded-2xl"
+                                />
+                              </div>
+                            </div>
+                          </section>
+
+                          <section className="space-y-6">
+                            <h3 className="text-xl font-bold flex items-center gap-2">
+                              <UserIcon className="w-5 h-5 text-amber-500" />
+                              Audience & Usage
+                            </h3>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              <div className="space-y-3">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">User Persona</label>
+                                <Input 
+                                  value={formData.userPersona} 
+                                  onChange={(e) => setFormData({ ...formData, userPersona: e.target.value })}
+                                  placeholder="e.g., Internal (Finance), External"
+                                  className="bg-slate-50 border-slate-200 rounded-xl"
+                                />
+                              </div>
+                              <div className="space-y-3">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Solution Advisor</label>
+                                <Select 
+                                  value={walkmeOwners.includes(formData.solutionAdvisor || '') ? formData.solutionAdvisor : 'Other'} 
+                                  onValueChange={(v) => setFormData({ ...formData, solutionAdvisor: v === 'Other' ? '' : v })}
+                                >
+                                  <SelectTrigger className="bg-slate-50 border-slate-200 rounded-xl">
+                                    <SelectValue placeholder="Select SA" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {walkmeOwners.map(owner => (
+                                      <SelectItem key={owner} value={owner}>{owner}</SelectItem>
+                                    ))}
+                                    <SelectItem value="Other">Add New SA...</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                {(!walkmeOwners.includes(formData.solutionAdvisor || '') || formData.solutionAdvisor === 'Other') && (
+                                  <Input 
+                                    className="mt-2 bg-slate-50 border-slate-200 rounded-xl"
+                                    value={formData.solutionAdvisor} 
+                                    onChange={(e) => setFormData({ ...formData, solutionAdvisor: e.target.value })}
+                                    placeholder="Enter SA Name"
+                                  />
+                                )}
+                              </div>
+                            </div>
+                          </section>
+                        </div>
+
+                        <div className="space-y-8">
+                          <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 space-y-8">
+                            <h4 className="text-xs font-black uppercase tracking-widest text-slate-400">Decision Metrics</h4>
+                            
+                            <div className="space-y-6">
+                              <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">ROI Potential</label>
+                                <Select value={formData.roiLevel} onValueChange={(v: any) => setFormData({ ...formData, roiLevel: v })}>
+                                  <SelectTrigger className="bg-white border-slate-200 rounded-xl"><SelectValue /></SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="High">High</SelectItem>
+                                    <SelectItem value="Medium">Medium</SelectItem>
+                                    <SelectItem value="Experimental">Experimental</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+
+                              <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Implementation Effort</label>
+                                <Select value={formData.implementationEffort} onValueChange={(v: any) => setFormData({ ...formData, implementationEffort: v })}>
+                                  <SelectTrigger className="bg-white border-slate-200 rounded-xl"><SelectValue /></SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="Low">Low</SelectItem>
+                                    <SelectItem value="Medium">Medium</SelectItem>
+                                    <SelectItem value="High">High</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+
+                              <Separator />
+
+                              <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Use Case Type</label>
+                                <Select value={formData.useCaseType} onValueChange={(v: any) => setFormData({ ...formData, useCaseType: v })}>
+                                  <SelectTrigger className="bg-white border-slate-200 rounded-xl"><SelectValue /></SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="Automation">Automation</SelectItem>
+                                    <SelectItem value="Content Generation">Content Generation</SelectItem>
+                                    <SelectItem value="Decision Support">Decision Support</SelectItem>
+                                    <SelectItem value="Other">Other</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+
+                              <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Business Function</label>
+                                <Select value={formData.businessFunction} onValueChange={(v: any) => setFormData({ ...formData, businessFunction: v })}>
+                                  <SelectTrigger className="bg-white border-slate-200 rounded-xl"><SelectValue /></SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="Marketing">Marketing</SelectItem>
+                                    <SelectItem value="Operations">Operations</SelectItem>
+                                    <SelectItem value="Customer Support">Customer Support</SelectItem>
+                                    <SelectItem value="Sales">Sales</SelectItem>
+                                    <SelectItem value="HR">HR</SelectItem>
+                                    <SelectItem value="Finance">Finance</SelectItem>
+                                    <SelectItem value="Engineering">Engineering</SelectItem>
+                                    <SelectItem value="Other">Other</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </div>
+
+                              <Separator />
+
+                              <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">AI Capability</label>
+                                <Select 
+                                  value={aiCapabilities.includes(formData.aiCapability || '') ? formData.aiCapability : 'Other'} 
+                                  onValueChange={(v) => setFormData({ ...formData, aiCapability: v === 'Other' ? '' : v })}
+                                >
+                                  <SelectTrigger className="bg-white border-slate-200 rounded-xl"><SelectValue /></SelectTrigger>
+                                  <SelectContent className="max-h-[300px]">
+                                    {aiCapabilities.map(cap => (
+                                      <SelectItem key={cap} value={cap}>{cap}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                {(!aiCapabilities.includes(formData.aiCapability || '') || formData.aiCapability === 'Other') && (
+                                  <Input 
+                                    className="mt-2 bg-white border-slate-200 rounded-xl"
+                                    value={formData.aiCapability} 
+                                    onChange={(e) => setFormData({ ...formData, aiCapability: e.target.value })}
+                                    placeholder="Specify custom capability"
+                                  />
+                                )}
+                              </div>
+
+                              <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">WalkMe Feature</label>
+                                <Select 
+                                  value={walkmeFeatures.includes(formData.walkmeFeature || '') ? formData.walkmeFeature : 'Other'} 
+                                  onValueChange={(v) => setFormData({ ...formData, walkmeFeature: v === 'Other' ? '' : v })}
+                                >
+                                  <SelectTrigger className="bg-white border-slate-200 rounded-xl"><SelectValue /></SelectTrigger>
+                                  <SelectContent className="max-h-[300px]">
+                                    {walkmeFeatures.map(feat => (
+                                      <SelectItem key={feat} value={feat}>{feat}</SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                {(!walkmeFeatures.includes(formData.walkmeFeature || '') || formData.walkmeFeature === 'Other') && (
+                                  <Input 
+                                    className="mt-2 bg-white border-slate-200 rounded-xl"
+                                    value={formData.walkmeFeature} 
+                                    onChange={(e) => setFormData({ ...formData, walkmeFeature: e.target.value })}
+                                    placeholder="Specify custom feature"
+                                  />
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </TabsContent>
+
+                    <TabsContent value="blueprint" className="m-0 space-y-12">
+                      <div className="max-w-4xl space-y-12">
+                        <section className="space-y-6">
+                          <h3 className="text-xl font-bold flex items-center gap-2">
+                            <Layers className="w-5 h-5 text-primary" />
+                            Architecture & Workflow
+                          </h3>
+                          <div className="p-8 bg-slate-50 rounded-3xl border border-slate-100 space-y-8">
+                            <div className="space-y-3">
+                              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Architecture Diagram / Description</label>
+                              <Textarea 
+                                value={formData.architectureDiagram} 
+                                onChange={(e) => setFormData({ ...formData, architectureDiagram: e.target.value })}
+                                placeholder="Describe the technical architecture or provide a diagram URL"
+                                className="min-h-[150px] bg-white border-slate-200 rounded-2xl"
+                              />
+                            </div>
+                            <div className="space-y-3">
+                              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Example Prompt / Logic</label>
+                              <Textarea 
+                                value={formData.examplePrompt} 
+                                onChange={(e) => setFormData({ ...formData, examplePrompt: e.target.value })}
+                                placeholder="Paste a sample prompt or describe the logic steps..."
+                                className="min-h-[150px] bg-slate-900 text-emerald-400 font-mono text-sm border-none rounded-2xl p-6"
+                              />
+                            </div>
+                          </div>
+                        </section>
+
+                        <section className="space-y-6">
+                          <h3 className="text-xl font-bold flex items-center gap-2">
+                            <Quote className="w-5 h-5 text-emerald-500" />
+                            Real-World Grounding
+                          </h3>
+                          <div className="space-y-3">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Reference Example</label>
+                            <Textarea 
+                              value={formData.realWorldExample} 
+                              onChange={(e) => setFormData({ ...formData, realWorldExample: e.target.value })}
+                              placeholder="e.g., Used by X company for Y workflow to achieve Z..."
+                              className="min-h-[100px] bg-emerald-50/30 border-emerald-100 rounded-2xl italic"
+                            />
+                          </div>
+                        </section>
+                      </div>
+                    </TabsContent>
+
+                    <TabsContent value="tasks" className="m-0 space-y-12">
+                      <div className="max-w-4xl space-y-12">
+                        <section className="space-y-6">
+                          <h3 className="text-xl font-bold flex items-center gap-2">
+                            <Clock className="w-5 h-5 text-primary" />
+                            Action Items & Timeline
+                          </h3>
+                          
+                          <div className="bg-slate-50 p-8 rounded-3xl border border-slate-100 space-y-8">
+                            <div className="grid grid-cols-1 gap-4">
+                              <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">New Action Item</label>
+                                <Input 
+                                  placeholder="What needs to be done?"
+                                  value={newTask.actionItem}
+                                  onChange={(e) => setNewTask({ ...newTask, actionItem: e.target.value })}
+                                  className="bg-white border-slate-200 rounded-xl h-12"
+                                />
+                              </div>
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="space-y-2">
+                                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Owner</label>
+                                  <Input 
+                                    placeholder="Who is responsible?"
+                                    value={newTask.owner}
+                                    onChange={(e) => setNewTask({ ...newTask, owner: e.target.value })}
+                                    className="bg-white border-slate-200 rounded-xl h-12"
+                                  />
+                                </div>
+                                <div className="space-y-2">
+                                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Due Date</label>
+                                  <Input 
+                                    type="date"
+                                    value={newTask.dueDate}
+                                    onChange={(e) => setNewTask({ ...newTask, dueDate: e.target.value })}
+                                    className="bg-white border-slate-200 rounded-xl h-12"
+                                  />
+                                </div>
+                                <div className="space-y-2">
+                                  <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Status</label>
+                                  <Select 
+                                    value={newTask.status}
+                                    onValueChange={(v: any) => setNewTask({ ...newTask, status: v })}
+                                  >
+                                    <SelectTrigger className="bg-white border-slate-200 rounded-xl h-12">
+                                      <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="Pending">Pending</SelectItem>
+                                      <SelectItem value="In Progress">In Progress</SelectItem>
+                                      <SelectItem value="Completed">Completed</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              </div>
+                              <Button type="button" onClick={addTask} className="w-full h-12 rounded-xl gap-2">
+                                <Plus className="w-4 h-4" />
+                                Add Task to Timeline
+                              </Button>
+                            </div>
+
+                            {formData.tasks && formData.tasks.length > 0 && (
+                              <div className="space-y-3 pt-8 border-t border-slate-200">
+                                {formData.tasks.map((task) => (
+                                  <div key={task.id} className="flex items-center justify-between bg-white p-4 rounded-2xl border border-slate-200 shadow-sm group">
+                                    <div className="flex items-center gap-4">
+                                      {task.status === 'Completed' ? (
+                                        <CheckCircle className="w-5 h-5 text-emerald-500" />
+                                      ) : task.status === 'In Progress' ? (
+                                        <Clock className="w-5 h-5 text-amber-500" />
+                                      ) : (
+                                        <Circle className="w-5 h-5 text-slate-300" />
+                                      )}
+                                      <div>
+                                        <p className="font-bold text-slate-900">{task.actionItem}</p>
+                                        <p className="text-xs text-slate-500">
+                                          {task.owner} • {task.dueDate || 'No date'}
+                                        </p>
+                                      </div>
+                                    </div>
+                                    <Button 
+                                      variant="ghost" 
+                                      size="icon" 
+                                      className="h-8 w-8 text-slate-400 hover:text-red-500 rounded-full"
+                                      onClick={() => removeTask(task.id)}
+                                    >
+                                      <X className="w-4 h-4" />
+                                    </Button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </section>
+
+                        <section className="space-y-6">
+                          <h3 className="text-xl font-bold flex items-center gap-2">
+                            <Rocket className="w-5 h-5 text-primary" />
+                            Launch Readiness
+                          </h3>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 flex items-center justify-between">
+                              <div className="space-y-1">
+                                <p className="font-bold text-slate-900">Demo Status</p>
+                                <p className="text-xs text-slate-500">Has this been presented to stakeholders?</p>
+                              </div>
+                              <label className="relative inline-flex items-center cursor-pointer">
+                                <input 
+                                  type="checkbox" 
+                                  checked={formData.demoPresented} 
+                                  onChange={(e) => setFormData({ ...formData, demoPresented: e.target.checked })}
+                                  className="sr-only peer"
+                                />
+                                <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                              </label>
+                            </div>
+                            <div className="space-y-3">
+                              <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Recording / Demo Link</label>
+                              <Input 
+                                value={formData.recordingLink} 
+                                onChange={(e) => setFormData({ ...formData, recordingLink: e.target.value })}
+                                placeholder="https://share.vidyard.com/..."
+                                className="bg-slate-50 border-slate-200 rounded-xl h-14"
+                              />
+                            </div>
+                          </div>
+                        </section>
+                      </div>
+                    </TabsContent>
+                  </div>
+                </ScrollArea>
+
+                <div className="p-6 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 px-8">
+                  <Button variant="ghost" className="font-bold text-slate-500" onClick={() => setIsFormView(false)}>Discard Changes</Button>
+                  <Button onClick={handleSave} className="px-12 h-12 rounded-xl font-bold shadow-lg shadow-primary/20">
+                    {editingUseCase ? 'Update Use Case' : 'Publish Use Case'}
+                  </Button>
+                </div>
+              </Tabs>
+            </DialogContent>
+          </Dialog>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {filteredUseCases.length === 0 ? (
@@ -1101,7 +1163,7 @@ export function UseCaseList({ useCases, accounts, profile }: UseCaseListProps) {
                     onClick={() => {
                       setEditingUseCase(selectedUseCase);
                       setFormData(selectedUseCase);
-                      setIsAddOpen(true);
+                      setIsFormView(true);
                       setSelectedUseCase(null);
                     }}
                   >

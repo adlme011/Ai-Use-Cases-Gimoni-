@@ -8,38 +8,40 @@ service cloud.firestore {
     // Collection: accounts
     // Document ID: auto-generated
     // Fields:
-    //   - name: string (required, 1-100 chars)
+    //   - name: string (required)
     //   - region: string (required, enum: ["US", "Europe"])
-    //   - leads: string (optional, 0-200 chars)
+    //   - leads: string (optional)
     //   - status: string (required, enum: ["Target", "Selected", "Active"])
     //   - jouleDeployed: bool (optional)
     //   - walkMeDeployed: bool (optional)
+    //   - pocs: string (optional)
+    //   - department: string (optional)
+    //   - otherAiTools: string (optional)
     //
     // Collection: useCases
     // Document ID: auto-generated
     // Fields:
-    //   - accountId: string (required, references accounts)
-    //   - title: string (required, 1-200 chars)
-    //   - description: string (optional, 0-2000 chars)
-    //   - valueProposition: string (optional, 0-2000 chars)
-    //   - status: string (required, enum: ["Idea", "Draft", "Feasibility", "Validated", "Productized"])
+    //   - accountId: string (required)
+    //   - title: string (required)
+    //   - summary: string (optional)
+    //   - description: string (optional)
+    //   - problemStatement: string (optional)
+    //   - solution: string (optional)
+    //   - valueProposition: string (optional)
+    //   - status: string (required, enum: ["Idea", "Draft", "Feasibility", "Validated", "Productized", "POC"])
     //   - authorId: string (required, immutable)
-    //   - authorName: string (required, 1-100 chars)
+    //   - authorName: string (required)
     //   - createdAt: timestamp (required, immutable)
     //
     // Collection: users
     // Document ID: user UID
     // Fields:
-    //   - name: string (required, 1-100 chars)
+    //   - name: string (required)
     //   - email: string (required, email format)
     //   - role: string (required, enum: ["Solution Advisor", "Engineering", "Leadership"])
     //
     // ===============================================================
 
-    // ===============================================================
-    // Helper Functions
-    // ===============================================================
-    
     function isAuthenticated() {
       return request.auth != null;
     }
@@ -50,7 +52,8 @@ service cloud.firestore {
 
     function isAdmin() {
       return isAuthenticated() && 
-        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Leadership' ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Leadership' ||
          (request.auth.token.email == "meir.adler@walkme.com" && request.auth.token.email_verified == true));
     }
 
@@ -62,28 +65,16 @@ service cloud.firestore {
       return request.resource.data.keys().hasOnly(fields);
     }
 
-    // ===============================================================
-    // Domain Validators
-    // ===============================================================
-
     function isValidAccount(data) {
-      return data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+      return data.name is string && data.name.size() > 0 && data.name.size() <= 200 &&
              data.region in ["US", "Europe"] &&
              data.status in ["Target", "Selected", "Active"] &&
-             (!('leads' in data) || (data.leads is string && data.leads.size() <= 200)) &&
+             (!('leads' in data) || (data.leads is string && data.leads.size() <= 500)) &&
              (!('jouleDeployed' in data) || data.jouleDeployed is bool) &&
-             (!('walkMeDeployed' in data) || data.walkMeDeployed is bool);
-    }
-
-    function isValidUseCase(data) {
-      return data.accountId is string &&
-             data.title is string && data.title.size() > 0 && data.title.size() <= 200 &&
-             data.status in ["Idea", "Draft", "Feasibility", "Validated", "Productized"] &&
-             data.authorId == request.auth.uid &&
-             data.authorName is string && data.authorName.size() > 0 && data.authorName.size() <= 100 &&
-             (!('description' in data) || (data.description is string && data.description.size() <= 2000)) &&
-             (!('valueProposition' in data) || (data.valueProposition is string && data.valueProposition.size() <= 2000)) &&
-             (!('resources' in data) || (data.resources is string && data.resources.size() <= 500));
+             (!('walkMeDeployed' in data) || data.walkMeDeployed is bool) &&
+             (!('pocs' in data) || (data.pocs is string && data.pocs.size() <= 1000)) &&
+             (!('department' in data) || (data.department is string && data.department.size() <= 200)) &&
+             (!('otherAiTools' in data) || (data.otherAiTools is string && data.otherAiTools.size() <= 2000));
     }
 
     function isValidUser(data) {
@@ -92,24 +83,51 @@ service cloud.firestore {
              data.role in ["Solution Advisor", "Engineering", "Leadership"];
     }
 
-    // ===============================================================
-    // Rules
-    // ===============================================================
+    function isValidUseCase(data) {
+      return hasOnlyAllowedFields([
+        'accountId', 'title', 'summary', 'description', 'problemStatement', 'solution', 
+        'valueProposition', 'status', 'businessProblem', 'aiCapability', 'walkmeFeature', 
+        'solutionAdvisor', 'userPersona', 'impactMetrics', 'jouleUsage', 'walkmeUsage', 
+        'roiLevel', 'implementationEffort', 'useCaseType', 'businessFunction', 
+        'realWorldExample', 'architectureDiagram', 'examplePrompt', 'tasks', 
+        'authorId', 'authorName', 'demoPresented', 'recordingLink', 'createdAt', 'accountName'
+      ]) &&
+             data.accountId is string &&
+             data.title is string && data.title.size() > 0 && data.title.size() <= 200 &&
+             data.status in ["Idea", "Draft", "Feasibility", "Validated", "Productized", "POC"] &&
+             data.authorId == request.auth.uid &&
+             (!('summary' in data) || (data.summary is string && data.summary.size() <= 500)) &&
+             (!('description' in data) || (data.description is string && data.description.size() <= 5000)) &&
+             (!('roiLevel' in data) || data.roiLevel in ["High", "Medium", "Experimental"]) &&
+             (!('implementationEffort' in data) || data.implementationEffort in ["Low", "Medium", "High"]) &&
+             (!('useCaseType' in data) || data.useCaseType in ["Automation", "Content Generation", "Decision Support", "Other"]) &&
+             (!('businessFunction' in data) || data.businessFunction in ["Marketing", "Operations", "Customer Support", "Sales", "HR", "Finance", "Engineering", "Other"]);
+    }
 
     match /users/{userId} {
-      allow read, write: if true;
+      allow read: if isAuthenticated();
+      allow create: if isOwner(userId) && isValidUser(request.resource.data) && request.resource.data.role != 'Leadership';
+      allow update: if isOwner(userId) && isValidUser(request.resource.data) && request.resource.data.role == resource.data.role;
+      allow write: if isAdmin();
     }
 
     match /accounts/{accountId} {
-      allow read, write: if true;
+      allow read: if isAuthenticated();
+      allow write: if isAdmin();
     }
 
     match /useCases/{useCaseId} {
-      allow read, write: if true;
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isValidUseCase(request.resource.data);
+      allow update: if isAuthenticated() && isValidUseCase(request.resource.data) && 
+                      (resource.data.authorId == request.auth.uid || isAdmin()) &&
+                      request.resource.data.authorId == resource.data.authorId &&
+                      request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if isAuthenticated() && (resource.data.authorId == request.auth.uid || isAdmin());
     }
     
     match /test/connection {
-      allow read: if true;
+      allow read: if isAuthenticated();
     }
   }
 }
