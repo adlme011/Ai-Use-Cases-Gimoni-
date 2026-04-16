@@ -208,18 +208,33 @@ export function UseCaseList({ useCases, accounts, profile }: UseCaseListProps) {
   ].sort();
 
   const aiCapabilities = [
-    'Conversation / Chatbot',
-    'LM / Generative AI',
-    'Recommendations / Next Best Action',
-    'Classification / Tagging',
-    'Extraction / Summarization',
-    'Translation',
+    'Generative AI (LLMs)',
+    'Chatbots / Conversational AI',
+    'Natural Language Processing (NLP)',
+    'Text Summarization / Extraction',
     'Sentiment Analysis',
-    'Image Recognition / Computer Vision',
-    'Speech to Text / Audio Transcription',
-    'Predictive Analytics / Forecasting',
-    'Personalization / Content Generation',
+    'Language Translation',
+    'Image / Video Recognition',
+    'Speech-to-Text / Text-to-Speech',
+    'Predictive Analytics',
+    'Recommendation Engines',
     'Anomaly Detection',
+    'Classification / Tagging',
+    'Process Automation (RPA/AI)',
+    'Other'
+  ];
+
+  const walkmeFeatures = [
+    'ActionBot',
+    'Smart Walk-Thru',
+    'SmartTips',
+    'ShoutOuts',
+    'Resources',
+    'Menus',
+    'Onboarding Task List',
+    'Search',
+    'Workstation',
+    'DAP (Digital Adoption Platform)',
     'Other'
   ];
 
@@ -771,11 +786,27 @@ export function UseCaseList({ useCases, accounts, profile }: UseCaseListProps) {
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">WalkMe Product / Feature Involved</label>
-                <Input 
-                  value={formData.walkmeFeature} 
-                  onChange={(e) => setFormData({ ...formData, walkmeFeature: e.target.value })}
-                  placeholder="e.g., Action Bar, SmartTips"
-                />
+                <Select 
+                  value={walkmeFeatures.includes(formData.walkmeFeature || '') ? formData.walkmeFeature : 'Other'} 
+                  onValueChange={(v) => setFormData({ ...formData, walkmeFeature: v === 'Other' ? '' : v })}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select WalkMe feature" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-[300px]">
+                    {walkmeFeatures.map(feat => (
+                      <SelectItem key={feat} value={feat}>{feat}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {(!walkmeFeatures.includes(formData.walkmeFeature || '') || formData.walkmeFeature === 'Other') && (
+                  <Input 
+                    className="mt-2"
+                    value={formData.walkmeFeature} 
+                    onChange={(e) => setFormData({ ...formData, walkmeFeature: e.target.value })}
+                    placeholder="Specify custom feature"
+                  />
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-4">
