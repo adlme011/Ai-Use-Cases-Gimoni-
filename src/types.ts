@@ -24,7 +24,10 @@ export interface UseCase {
   accountId: string;
   accountName?: string;
   title: string;
+  summary: string; // 1-line summary
   description: string;
+  problemStatement?: string;
+  solution?: string;
   valueProposition: string;
   status: 'Idea' | 'Draft' | 'Feasibility' | 'Validated' | 'Productized' | 'POC';
   businessProblem?: string;
@@ -35,6 +38,13 @@ export interface UseCase {
   impactMetrics?: string;
   jouleUsage?: string;
   walkmeUsage?: string;
+  roiLevel: 'High' | 'Medium' | 'Experimental';
+  implementationEffort: 'Low' | 'Medium' | 'High';
+  useCaseType: 'Automation' | 'Content Generation' | 'Decision Support' | 'Other';
+  businessFunction: 'Marketing' | 'Operations' | 'Customer Support' | 'Sales' | 'HR' | 'Finance' | 'Engineering' | 'Other';
+  realWorldExample?: string;
+  architectureDiagram?: string;
+  examplePrompt?: string;
   tasks?: Task[];
   authorId: string;
   authorName: string;
