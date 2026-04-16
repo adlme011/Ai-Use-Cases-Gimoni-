@@ -1,7 +1,13 @@
 import { GoogleGenAI } from "@google/genai";
 import { UseCase } from "@/types";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY || process.env.GEMINI_API_KEY;
+
+if (!apiKey) {
+  console.warn("GEMINI_API_KEY is not defined. AI features will not work.");
+}
+
+const ai = new GoogleGenAI({ apiKey: apiKey || 'dummy-key' });
 
 export async function generateImplementationPlan(useCase: UseCase) {
   const prompt = `
