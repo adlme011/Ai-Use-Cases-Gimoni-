@@ -17,7 +17,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { 
   Plus, Pencil, Trash2, Globe, User, CheckCircle2, XCircle, Building2, 
-  Users, Info, Settings, Layout, ArrowRight, X, Mail, Phone, Briefcase, Sparkles
+  Users, Info, Settings, Layout, ArrowRight, X, Mail, Phone, Briefcase, Sparkles, Search
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { motion } from 'motion/react';
@@ -32,6 +32,7 @@ export function AccountList({ accounts, isAdmin }: AccountListProps) {
   const [editingAccount, setEditingAccount] = useState<Account | null>(null);
   const [selectedAccount, setSelectedAccount] = useState<Account | null>(null);
   const [isFormView, setIsFormView] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
   const [formData, setFormData] = useState<Partial<Account>>({
     name: '',
     region: 'US',
@@ -57,6 +58,14 @@ export function AccountList({ accounts, isAdmin }: AccountListProps) {
       otherAiTools: '',
     });
   };
+
+  const filteredAccounts = accounts.filter(acc => 
+    acc.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    acc.leads.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    acc.region.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    acc.status.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (acc.department?.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
 
   const handleSave = async () => {
     if (!formData.name) {
@@ -111,23 +120,37 @@ export function AccountList({ accounts, isAdmin }: AccountListProps) {
   ].sort();
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold text-slate-900">Target Accounts</h2>
-          <p className="text-slate-500">Manage the target accounts for the SWAT initiative.</p>
+    <div className="space-y-8">
+      <div className="flex flex-col md:flex-row gap-6 items-center justify-between">
+        <div className="w-full md:w-auto">
+          <h2 className="text-3xl font-black text-slate-900 tracking-tight">Target Accounts</h2>
+          <p className="text-slate-500 font-medium">Strategic account management for the SWAT initiative.</p>
         </div>
-        <Button 
-          className="gap-2 bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 rounded-xl px-6 h-11 font-bold"
-          onClick={() => {
-            resetForm();
-            setIsAddOpen(true);
-            setIsFormView(true);
-          }}
-        >
-          <Plus className="w-4 h-4" />
-          Add Account
-        </Button>
+        
+        <div className="flex flex-col md:flex-row gap-4 w-full md:w-auto items-center flex-1 md:justify-end">
+          <div className="relative w-full md:w-96 group">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 group-focus-within:text-primary transition-colors" />
+            <Input 
+              placeholder="Search accounts..." 
+              className="pl-12 h-14 bg-white/80 backdrop-blur-sm border-slate-200 rounded-2xl focus:ring-primary focus:border-primary transition-all shadow-sm w-full"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+
+          <Button 
+            className="h-14 px-8 gap-2 rounded-2xl bg-primary hover:bg-primary/90 shadow-lg shadow-primary/20 font-bold transition-all hover:scale-[1.02] active:scale-[0.98] w-full md:w-auto whitespace-nowrap"
+            onClick={() => {
+              resetForm();
+              setIsAddOpen(true);
+              setIsFormView(true);
+            }}
+          >
+            <Plus className="w-5 h-5" />
+            Add Account
+          </Button>
+        </div>
+
         <Dialog open={isAddOpen || !!selectedAccount} onOpenChange={(open) => {
           if (!open) {
             setIsAddOpen(false);
@@ -137,7 +160,7 @@ export function AccountList({ accounts, isAdmin }: AccountListProps) {
             resetForm();
           }
         }}>
-          <DialogContent className="max-w-[1000px] p-0 overflow-hidden border-none rounded-[32px] shadow-2xl">
+          <DialogContent className="sm:max-w-[1000px] w-[95vw] p-0 overflow-hidden border-none rounded-[32px] shadow-2xl">
             <div className="bg-slate-900 p-8 text-white relative">
               <div className="flex justify-between items-start pr-8">
                 <div className="space-y-2">
@@ -524,17 +547,17 @@ export function AccountList({ accounts, isAdmin }: AccountListProps) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {accounts.length === 0 ? (
+            {filteredAccounts.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="text-center py-20 text-slate-400">
                   <div className="flex flex-col items-center gap-2">
                     <Building2 className="w-10 h-10 opacity-10" />
-                    <p className="text-sm font-medium">No accounts added yet.</p>
+                    <p className="text-sm font-medium">No accounts found.</p>
                   </div>
                 </TableCell>
               </TableRow>
             ) : (
-              accounts.map((account) => (
+              filteredAccounts.map((account) => (
                 <TableRow 
                   key={account.id} 
                   className="group hover:bg-slate-50/50 transition-colors cursor-pointer"

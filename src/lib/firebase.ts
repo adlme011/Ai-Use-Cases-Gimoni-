@@ -77,10 +77,18 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
 // Test Connection
 async function testConnection() {
   try {
+    // We use getDocFromServer to force a network request and bypass cache
     await getDocFromServer(doc(db, 'test', 'connection'));
   } catch (error) {
-    if(error instanceof Error && error.message.includes('the client is offline')) {
-      console.error("Please check your Firebase configuration. ");
+    if (error instanceof Error) {
+      if (error.message.includes('the client is offline')) {
+        console.error("Firebase Connection Error: The client is offline. Please check your Firebase configuration and internet connection.");
+      } else if (error.message.includes('permission-denied')) {
+        // This is expected if the user is not logged in, as the rule requires authentication
+        console.log("Firebase Connection: SDK initialized. (Authentication required for data access)");
+      } else {
+        console.error("Firebase Connection Error:", error.message);
+      }
     }
   }
 }
