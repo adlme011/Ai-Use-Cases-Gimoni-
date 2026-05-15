@@ -1,3 +1,10 @@
+export interface PointOfContact {
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: string;
+}
+
 export interface Account {
   id: string;
   name: string;
@@ -6,7 +13,7 @@ export interface Account {
   status: 'Target' | 'Selected' | 'Active';
   jouleDeployed: boolean;
   walkMeDeployed: boolean;
-  pocs?: string;
+  pocs?: PointOfContact[];
   department?: string;
   otherAiTools?: string;
 }

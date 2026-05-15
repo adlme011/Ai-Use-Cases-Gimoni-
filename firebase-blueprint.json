@@ -11,7 +11,20 @@
         "status": { "type": "string", "enum": ["Target", "Selected", "Active"], "description": "The selection status of the account." },
         "jouleDeployed": { "type": "boolean", "description": "Whether SAP Joule is deployed." },
         "walkMeDeployed": { "type": "boolean", "description": "Whether WalkMe is deployed." },
-        "pocs": { "type": "string", "description": "Point of contacts at the account." },
+        "pocs": {
+          "type": "array",
+          "description": "Point of contacts at the account.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "firstName": { "type": "string" },
+              "lastName": { "type": "string" },
+              "email": { "type": "string" },
+              "role": { "type": "string" }
+            },
+            "required": ["firstName", "lastName"]
+          }
+        },
         "department": { "type": "string", "description": "The department involved." },
         "otherAiTools": { "type": "string", "description": "Other AI tools they are using and how." }
       },

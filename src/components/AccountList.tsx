@@ -17,8 +17,10 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { 
   Plus, Pencil, Trash2, Globe, User, CheckCircle2, XCircle, Building2, 
-  Users, Info, Settings, Layout, ArrowRight, X, Mail, Phone, Briefcase, Sparkles, Search
+  Users, Info, Settings, Layout, ArrowRight, X, Mail, Phone, Briefcase, Sparkles, Search,
+  PlusCircle
 } from 'lucide-react';
+import { PointOfContact } from '@/types';
 import { toast } from 'sonner';
 import { motion } from 'motion/react';
 
@@ -40,7 +42,7 @@ export function AccountList({ accounts, isAdmin }: AccountListProps) {
     status: 'Target',
     jouleDeployed: false,
     walkMeDeployed: false,
-    pocs: '',
+    pocs: [],
     department: '',
     otherAiTools: '',
   });
@@ -53,10 +55,29 @@ export function AccountList({ accounts, isAdmin }: AccountListProps) {
       status: 'Target',
       jouleDeployed: false,
       walkMeDeployed: false,
-      pocs: '',
+      pocs: [],
       department: '',
       otherAiTools: '',
     });
+  };
+
+  const addPoc = () => {
+    const currentPocs = Array.isArray(formData.pocs) ? formData.pocs : [];
+    setFormData({
+      ...formData,
+      pocs: [...currentPocs, { firstName: '', lastName: '', email: '', role: '' }]
+    });
+  };
+
+  const updatePoc = (index: number, field: keyof PointOfContact, value: string) => {
+    const currentPocs = [...(Array.isArray(formData.pocs) ? formData.pocs : [])];
+    currentPocs[index] = { ...currentPocs[index], [field]: value };
+    setFormData({ ...formData, pocs: currentPocs });
+  };
+
+  const removePoc = (index: number) => {
+    const currentPocs = (Array.isArray(formData.pocs) ? formData.pocs : []).filter((_, i) => i !== index);
+    setFormData({ ...formData, pocs: currentPocs });
   };
 
   const filteredAccounts = accounts.filter(acc => 
@@ -160,8 +181,8 @@ export function AccountList({ accounts, isAdmin }: AccountListProps) {
             resetForm();
           }
         }}>
-          <DialogContent className="sm:max-w-[1000px] w-[95vw] p-0 overflow-hidden border-none rounded-[32px] shadow-2xl">
-            <div className="bg-slate-900 p-8 text-white relative">
+          <DialogContent className="sm:max-w-[1000px] w-[95vw] p-0 overflow-hidden border-none sm:rounded-l-[40px] sm:rounded-r-none shadow-2xl sm:left-auto sm:right-0 sm:top-0 sm:translate-x-0 sm:translate-y-0 h-screen max-h-screen flex flex-col">
+            <div className="bg-slate-900 p-8 text-white relative flex-shrink-0">
               <div className="flex justify-between items-start pr-8">
                 <div className="space-y-2">
                   <div className="flex items-center gap-3">
@@ -209,8 +230,8 @@ export function AccountList({ accounts, isAdmin }: AccountListProps) {
               </div>
             </div>
 
-            <Tabs defaultValue="overview" className="w-full">
-              <div className="px-8 border-b border-slate-100 bg-white sticky top-0 z-10">
+            <Tabs defaultValue="overview" className="w-full flex-1 flex flex-col overflow-hidden">
+              <div className="px-8 border-b border-slate-100 bg-white sticky top-0 z-10 flex-shrink-0">
                 <TabsList className="h-16 bg-transparent gap-8">
                   <TabsTrigger value="overview" className="h-16 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none font-bold text-sm px-0">
                     Overview
@@ -224,7 +245,7 @@ export function AccountList({ accounts, isAdmin }: AccountListProps) {
                 </TabsList>
               </div>
 
-              <ScrollArea className="h-[60vh]">
+              <ScrollArea className="flex-1">
                 <div className="p-8">
                   <TabsContent value="overview" className="mt-0 space-y-8">
                     {isFormView || isAddOpen ? (
@@ -433,14 +454,87 @@ export function AccountList({ accounts, isAdmin }: AccountListProps) {
                           </div>
                         </div>
                         <div className="space-y-6">
-                          <div className="space-y-2">
-                            <Label className="text-xs font-bold text-slate-500 ml-1">Point of Contacts (POCs)</Label>
-                            <Textarea 
-                              value={formData.pocs} 
-                              onChange={(e) => setFormData({ ...formData, pocs: e.target.value })}
-                              placeholder="Name, Role, Email (one per line)"
-                              className="bg-slate-50 border-slate-200 rounded-xl min-h-[120px] font-medium"
-                            />
+                          <div className="flex items-center justify-between">
+                            <Label className="text-xs font-bold text-slate-500 ml-1 uppercase tracking-wider">Point of Contacts (POCs)</Label>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="h-8 rounded-lg border-slate-200 text-xs font-bold gap-2"
+                              onClick={addPoc}
+                            >
+                              <Plus className="w-3 h-3" />
+                              Add POC
+                            </Button>
+                          </div>
+                          
+                          <div className="space-y-4">
+                            {(!formData.pocs || formData.pocs.length === 0) ? (
+                              <div className="p-8 border-2 border-dashed border-slate-100 rounded-3xl text-center">
+                                <Users className="w-8 h-8 text-slate-200 mx-auto mb-2" />
+                                <p className="text-xs font-medium text-slate-400">No contacts added yet.</p>
+                                <Button 
+                                  variant="link" 
+                                  className="text-primary font-bold text-xs p-0 h-auto mt-1"
+                                  onClick={addPoc}
+                                >
+                                  Add your first contact
+                                </Button>
+                              </div>
+                            ) : (
+                              (Array.isArray(formData.pocs) ? formData.pocs : []).map((poc, index) => (
+                                <div key={index} className="p-4 bg-slate-50 rounded-2xl border border-slate-100 relative group/poc">
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-white border border-slate-100 shadow-sm opacity-0 group-hover/poc:opacity-100 transition-opacity text-red-500 hover:text-red-600"
+                                    onClick={() => removePoc(index)}
+                                  >
+                                    <X className="w-3 h-3" />
+                                  </Button>
+                                  <div className="grid grid-cols-2 gap-3">
+                                    <div className="space-y-1">
+                                      <Label className="text-[10px] font-bold text-slate-400 ml-1">First Name</Label>
+                                      <Input 
+                                        value={poc.firstName} 
+                                        onChange={(e) => updatePoc(index, 'firstName', e.target.value)}
+                                        placeholder="First Name"
+                                        className="h-9 rounded-lg bg-white border-slate-200 text-sm"
+                                      />
+                                    </div>
+                                    <div className="space-y-1">
+                                      <Label className="text-[10px] font-bold text-slate-400 ml-1">Last Name</Label>
+                                      <Input 
+                                        value={poc.lastName} 
+                                        onChange={(e) => updatePoc(index, 'lastName', e.target.value)}
+                                        placeholder="Last Name"
+                                        className="h-9 rounded-lg bg-white border-slate-200 text-sm"
+                                      />
+                                    </div>
+                                    <div className="col-span-2 grid grid-cols-2 gap-3">
+                                      <div className="space-y-1">
+                                        <Label className="text-[10px] font-bold text-slate-400 ml-1">Email</Label>
+                                        <Input 
+                                          value={poc.email} 
+                                          onChange={(e) => updatePoc(index, 'email', e.target.value)}
+                                          placeholder="email@company.com"
+                                          type="email"
+                                          className="h-9 rounded-lg bg-white border-slate-200 text-sm"
+                                        />
+                                      </div>
+                                      <div className="space-y-1">
+                                        <Label className="text-[10px] font-bold text-slate-400 ml-1">Role</Label>
+                                        <Input 
+                                          value={poc.role} 
+                                          onChange={(e) => updatePoc(index, 'role', e.target.value)}
+                                          placeholder="e.g., IT Director"
+                                          className="h-9 rounded-lg bg-white border-slate-200 text-sm"
+                                        />
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              ))
+                            )}
                           </div>
                         </div>
                       </div>
@@ -461,8 +555,38 @@ export function AccountList({ accounts, isAdmin }: AccountListProps) {
                             <Users className="w-5 h-5 text-primary" />
                             Key Contacts
                           </h3>
-                          <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 whitespace-pre-wrap text-slate-700 font-medium leading-relaxed">
-                            {selectedAccount?.pocs || 'No contacts listed.'}
+                          <div className="space-y-3">
+                            {!selectedAccount?.pocs || selectedAccount.pocs.length === 0 ? (
+                              <div className="p-6 bg-slate-50 rounded-3xl border border-slate-100 text-slate-400 text-sm font-medium">
+                                No contacts listed.
+                              </div>
+                            ) : (
+                              Array.isArray(selectedAccount.pocs) && selectedAccount.pocs.map((poc, idx) => (
+                                <div key={idx} className="p-5 bg-white border border-slate-100 rounded-3xl shadow-sm flex items-center gap-4 group hover:border-primary/20 transition-colors">
+                                  <div className="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center text-slate-400 group-hover:bg-primary/5 group-hover:text-primary transition-colors">
+                                    <User className="w-6 h-6" />
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <div className="flex items-center justify-between mb-0.5">
+                                      <p className="font-bold text-slate-900 truncate">
+                                        {poc.firstName} {poc.lastName}
+                                      </p>
+                                      <Badge variant="outline" className="text-[9px] uppercase tracking-tighter border-slate-200 text-slate-500 font-bold">
+                                        {poc.role || 'Personnel'}
+                                      </Badge>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                      {poc.email && (
+                                        <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium truncate">
+                                          <Mail className="w-3 h-3 text-slate-400" />
+                                          {poc.email}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              ))
+                            )}
                           </div>
                         </section>
                       </div>
@@ -509,7 +633,7 @@ export function AccountList({ accounts, isAdmin }: AccountListProps) {
               </ScrollArea>
 
               {(isFormView || isAddOpen) && (
-                <div className="p-6 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 px-8">
+                <div className="p-6 border-t border-slate-100 bg-slate-50 flex justify-end gap-3 px-8 flex-shrink-0">
                   <Button 
                     variant="ghost" 
                     className="font-bold text-slate-500" 
@@ -588,8 +712,10 @@ export function AccountList({ accounts, isAdmin }: AccountListProps) {
                   </TableCell>
                   <TableCell>
                     <div className="space-y-1 max-w-[200px]">
-                      <div className="text-xs font-semibold text-slate-700 truncate" title={account.pocs}>
-                        {account.pocs || 'No POCs'}
+                      <div className="text-xs font-semibold text-slate-700 truncate">
+                        {Array.isArray(account.pocs) && account.pocs.length > 0 
+                          ? account.pocs.map(p => `${p.firstName} ${p.lastName}`).join(', ') 
+                          : typeof account.pocs === 'string' ? account.pocs : 'No POCs'}
                       </div>
                       <div className="text-[10px] text-slate-400 line-clamp-1 italic font-medium" title={account.otherAiTools}>
                         {account.otherAiTools || 'No AI tools info'}

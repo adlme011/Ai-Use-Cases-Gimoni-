@@ -72,7 +72,7 @@ service cloud.firestore {
              (!('leads' in data) || (data.leads is string && data.leads.size() <= 500)) &&
              (!('jouleDeployed' in data) || data.jouleDeployed is bool) &&
              (!('walkMeDeployed' in data) || data.walkMeDeployed is bool) &&
-             (!('pocs' in data) || (data.pocs is string && data.pocs.size() <= 1000)) &&
+             (!('pocs' in data) || (data.pocs is list && data.pocs.size() <= 20)) &&
              (!('department' in data) || (data.department is string && data.department.size() <= 200)) &&
              (!('otherAiTools' in data) || (data.otherAiTools is string && data.otherAiTools.size() <= 2000));
     }
