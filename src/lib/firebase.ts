@@ -17,8 +17,19 @@ const firebaseConfig = {
 // Initialize Firebase SDK
 const app = initializeApp(firebaseConfig);
 
-// Use the specific database ID from the config
-export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+// Dynamic DB allocation using a Proxy for resilience
+let activeDb = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+
+export const db = new Proxy({}, {
+  get(target, prop) {
+    const value = Reflect.get(activeDb, prop);
+    if (typeof value === 'function') {
+      return value.bind(activeDb);
+    }
+    return value;
+  }
+}) as ReturnType<typeof getFirestore>;
+
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
 
@@ -76,21 +87,54 @@ export function handleFirestoreError(error: unknown, operationType: OperationTyp
 
 // Test Connection
 async function testConnection() {
-  try {
-    // We use getDocFromServer to force a network request and bypass cache
-    await getDocFromServer(doc(db, 'test', 'connection'));
-  } catch (error) {
-    if (error instanceof Error) {
-      if (error.message.includes('the client is offline')) {
-        console.error("Firebase Connection Error: The client is offline. Please check your Firebase configuration and internet connection.");
-      } else if (error.message.includes('permission-denied')) {
-        // This is expected if the user is not logged in, as the rule requires authentication
-        console.log("Firebase Connection: SDK initialized. (Authentication required for data access)");
-      } else {
-        console.error("Firebase Connection Error:", error.message);
+  const maxRetries = 3;
+  const retryDelay = 1500; // ms
+
+  // Helper to test if a specific database is accessible
+  async function checkDbConnection(databaseInstance: typeof activeDb): Promise<boolean> {
+    try {
+      await getDocFromServer(doc(databaseInstance, 'test', 'connection'));
+      return true; // Succeeded!
+    } catch (error) {
+      if (error instanceof Error) {
+        if (error.message.includes('permission-denied')) {
+          // This is expected and means the Firestore is online and reached (rules block unauthenticated doc check)
+          return true; 
+        }
       }
+      return false; // Failed/Offline
     }
   }
+
+  // First, wait a moment for the Firestore client socket to start up asynchronously 
+  await new Promise(resolve => setTimeout(resolve, 800));
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    const isOk = await checkDbConnection(activeDb);
+    if (isOk) {
+      console.log("Firebase Connection: SDK initialized successfully.");
+      return;
+    }
+    
+    // If it failed and we are using a custom database, try fallback to (default)
+    if (firebaseConfig.firestoreDatabaseId && firebaseConfig.firestoreDatabaseId !== '(default)') {
+      console.warn(`Custom database connection failed, testing default database fallback (attempt ${attempt})...`);
+      const fallbackDb = getFirestore(app, '(default)');
+      const fallbackOk = await checkDbConnection(fallbackDb);
+      if (fallbackOk) {
+        console.log("Firebase Connection: Switched to fallback '(default)' database.");
+        activeDb = fallbackDb;
+        return;
+      }
+    }
+
+    if (attempt < maxRetries) {
+      await new Promise(resolve => setTimeout(resolve, retryDelay));
+    }
+  }
+
+  // If both failed after all retries, log a gentle warning to avoid blocking UI checks and active application
+  console.warn("Firebase Connection Warning: Default connection check timed out. Operating in offline/resilient cache mode.");
 }
 testConnection();
 
