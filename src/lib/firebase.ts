@@ -17,18 +17,8 @@ const firebaseConfig = {
 // Initialize Firebase SDK
 const app = initializeApp(firebaseConfig);
 
-// Dynamic DB allocation using a Proxy for resilience
-let activeDb = getFirestore(app, firebaseConfig.firestoreDatabaseId);
-
-export const db = new Proxy({}, {
-  get(target, prop) {
-    const value = Reflect.get(activeDb, prop);
-    if (typeof value === 'function') {
-      return value.bind(activeDb);
-    }
-    return value;
-  }
-}) as ReturnType<typeof getFirestore>;
+// Let db be a reassignable export to leverage ES Module live-bindings for fallback database switching
+export let db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
@@ -91,7 +81,7 @@ async function testConnection() {
   const retryDelay = 1500; // ms
 
   // Helper to test if a specific database is accessible
-  async function checkDbConnection(databaseInstance: typeof activeDb): Promise<boolean> {
+  async function checkDbConnection(databaseInstance: any): Promise<boolean> {
     try {
       await getDocFromServer(doc(databaseInstance, 'test', 'connection'));
       return true; // Succeeded!
@@ -110,7 +100,7 @@ async function testConnection() {
   await new Promise(resolve => setTimeout(resolve, 800));
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    const isOk = await checkDbConnection(activeDb);
+    const isOk = await checkDbConnection(db);
     if (isOk) {
       console.log("Firebase Connection: SDK initialized successfully.");
       return;
@@ -123,7 +113,7 @@ async function testConnection() {
       const fallbackOk = await checkDbConnection(fallbackDb);
       if (fallbackOk) {
         console.log("Firebase Connection: Switched to fallback '(default)' database.");
-        activeDb = fallbackDb;
+        db = fallbackDb;
         return;
       }
     }
