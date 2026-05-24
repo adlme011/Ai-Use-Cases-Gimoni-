@@ -17,8 +17,8 @@ const firebaseConfig = {
 // Initialize Firebase SDK
 const app = initializeApp(firebaseConfig);
 
-// Let db be a reassignable export to leverage ES Module live-bindings for fallback database switching
-export let db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
+// Export standard Firestore instance
+export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 
 export const auth = getAuth(app);
 export const googleProvider = new GoogleAuthProvider();
@@ -80,10 +80,10 @@ async function testConnection() {
   const maxRetries = 3;
   const retryDelay = 1500; // ms
 
-  // Helper to test if a specific database is accessible
-  async function checkDbConnection(databaseInstance: any): Promise<boolean> {
+  // Helper to test if database is active
+  async function checkDbConnection(): Promise<boolean> {
     try {
-      await getDocFromServer(doc(databaseInstance, 'test', 'connection'));
+      await getDocFromServer(doc(db, 'test', 'connection'));
       return true; // Succeeded!
     } catch (error) {
       if (error instanceof Error) {
@@ -100,22 +100,10 @@ async function testConnection() {
   await new Promise(resolve => setTimeout(resolve, 800));
 
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    const isOk = await checkDbConnection(db);
+    const isOk = await checkDbConnection();
     if (isOk) {
       console.log("Firebase Connection: SDK initialized successfully.");
       return;
-    }
-    
-    // If it failed and we are using a custom database, try fallback to (default)
-    if (firebaseConfig.firestoreDatabaseId && firebaseConfig.firestoreDatabaseId !== '(default)') {
-      console.warn(`Custom database connection failed, testing default database fallback (attempt ${attempt})...`);
-      const fallbackDb = getFirestore(app, '(default)');
-      const fallbackOk = await checkDbConnection(fallbackDb);
-      if (fallbackOk) {
-        console.log("Firebase Connection: Switched to fallback '(default)' database.");
-        db = fallbackDb;
-        return;
-      }
     }
 
     if (attempt < maxRetries) {
@@ -123,8 +111,8 @@ async function testConnection() {
     }
   }
 
-  // If both failed after all retries, log a gentle warning to avoid blocking UI checks and active application
-  console.warn("Firebase Connection Warning: Default connection check timed out. Operating in offline/resilient cache mode.");
+  // If failed, log a warning
+  console.warn("Firebase Connection Warning: Default connection check timed out. Operating in fallback cache mode.");
 }
 testConnection();
 

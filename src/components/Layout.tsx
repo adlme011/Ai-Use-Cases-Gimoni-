@@ -1,7 +1,7 @@
 import React from 'react';
 import { UserProfile } from '@/types';
 import { FirebaseUser } from '@/lib/firebase';
-import { LayoutDashboard, Building2, Lightbulb, ChevronRight, Menu, X } from 'lucide-react';
+import { LayoutDashboard, Building2, Lightbulb, ChevronRight, Menu, X, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -14,7 +14,7 @@ interface LayoutProps {
   setActiveTab: (tab: string) => void;
 }
 
-export function Layout({ children, profile, activeTab, setActiveTab }: LayoutProps) {
+export function Layout({ children, profile, onLogout, activeTab, setActiveTab }: LayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
 
   const navItems = [
@@ -102,9 +102,30 @@ export function Layout({ children, profile, activeTab, setActiveTab }: LayoutPro
               <div className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse" />
               <span className="text-[10px] font-bold text-primary uppercase tracking-wider">Live Hub</span>
             </div>
-            <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center">
-              <span className="text-[10px] font-bold text-slate-500">WM</span>
-            </div>
+            
+            {profile && (
+              <div className="flex items-center gap-3 pl-4 border-l border-slate-200">
+                <div className="flex flex-col text-right">
+                  <span className="text-xs font-bold text-slate-800 leading-tight">{profile.name}</span>
+                  <span className="text-[10px] text-slate-400 capitalize">{profile.role}</span>
+                </div>
+                {/* Initials avatar and signout hover button */}
+                <button
+                  onClick={onLogout}
+                  title="Sign Out"
+                  className="w-9 h-9 rounded-xl bg-slate-50 border border-slate-200 hover:border-red-200 hover:bg-red-50 text-slate-600 hover:text-red-600 transition-all flex items-center justify-center relative overflow-hidden group shadow-sm shrink-0 cursor-pointer"
+                >
+                  {/* Default Initials */}
+                  <span className="text-xs font-bold transition-all duration-200 group-hover:scale-0">
+                    {profile.name ? profile.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'US'}
+                  </span>
+                  {/* Hover Sign-Out Icon overlay */}
+                  <div className="absolute inset-0 flex items-center justify-center scale-0 group-hover:scale-100 transition-all duration-200">
+                    <LogOut className="w-4 h-4" />
+                  </div>
+                </button>
+              </div>
+            )}
           </div>
         </header>
 
